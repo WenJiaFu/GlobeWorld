@@ -22,6 +22,14 @@ var Harvest = function(creep) {
     } else {
         creep.AllocateSource();
     }
+
+    // 采集达到最大值直接Store      
+    //console.log(`energy: ${creep.carry.energy} creep.carryCapacity: ${creep.carryCapacity}`);
+    if (creep.carry.energy == creep.carryCapacity) {
+        console.log("直接存储");
+        var store = creep.FindStorableForStore(true);
+        creep.transfer(store, RESOURCE_ENERGY);
+    }
 }
 
 var Store = function(creep) {
@@ -38,7 +46,8 @@ var Store = function(creep) {
     }
 
     if (target) {
-        if (creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+        var ret = creep.transfer(target, RESOURCE_ENERGY);
+        if (ret == ERR_NOT_IN_RANGE) {
             creep.moveTo(target);
         }
     } else if (creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {

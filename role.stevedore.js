@@ -3,20 +3,25 @@
 // - 从storage分配energy到tower
 // state: distribute
 
+var State = {
+    Distribute: "distribute",
+    Unload: "unload"
+};
+
 var Distribute = function(creep) {
 	// 状态切换
-	if (creep.memory.distribute && creep.carry.energy == 0) {
-		creep.memory.distribute = false;
+	if (creep.memory.state == State.Distribute && creep.carry.energy == 0) {
+		creep.memory.state = State.Unload;
 		creep.say("unload");
 	}
 
-	if (!creep.memory.distribute && creep.carry.energy == creep.carryCapacity) {
-		creep.memory.distribute = true;
+	if (creep.memory.state == State.Unload && creep.carry.energy == creep.carryCapacity) {
+		creep.memory.state = State.Distribute;
 		creep.say("distribute:");
 	}
 
 	// 分配资源
-	if (creep.memory.distribute) {
+	if (creep.memory.state == State.Distribute) {
 		var extensions = creep.room.find(FIND_STRUCTURES, {
 			filter: (structure) => {
 				return (structure.structureType == STRUCTURE_EXTENSION && structure.energy < structure.energyCapacity);

@@ -1,3 +1,27 @@
+// 移动测试
+Creep.prototype.MoveTo = function (posX, posY) {
+    //console.log("posX:" + posX + " posY:" + posY + " room:" + this.room.name);
+    var pos = new RoomPosition(posX, posY, this.room.name);
+
+    if (!this.memory.pathTo) {
+        this.memory.pathTo = "";
+    }
+
+    var path = this.pos.findPathTo(pos);
+    this.memory.pathTo = Room.serializePath(path);
+    console.log("serialize path:" + this.memory.pathTo);
+
+    //console.log("room name" + this.room);
+
+// var path = spawn.pos.findPathTo(source);
+// Memory.path = Room.serializePath(path);
+// creep.moveByPath(Memory.path);
+
+    //var pos = new RoomPosition(10, 25, 'sim');
+    //console.log(pos);
+    return true;
+}
+
 // 统计Body个数
 Creep.prototype.BodyCount = function (BodyName){
     var BodyNum = 0;

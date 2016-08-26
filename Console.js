@@ -1,6 +1,7 @@
 // 采矿(harvester)
 Game.spawns['Spawn1'].createCreep( [WORK,WORK,CARRY,MOVE], undefined, { role: 'harvester', workRoom: 'sim'});
 Game.spawns['Spawn1'].createCreep( [WORK,WORK,CARRY,MOVE], undefined, { role: 'harvester'} );
+Game.spawns['Spawn1'].createCreep( [MOVE], "mover");
 
 // 升级人(upgrader)
 Game.spawns['Spawn1'].createCreep( [WORK,CARRY,CARRY,CARRY,MOVE], 'upgrader1', { role: 'upgrader', workplace: 'sim' } );

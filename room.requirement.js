@@ -6,6 +6,10 @@ var factorySpawn = require('factory.spawn');
 
 // Body组合元素
 var BodyElement = {
+	MaxHarvester: {
+		Body: [WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, MOVE],
+        Cost: 600
+	},
     WORK: {
         Body: [WORK, CARRY, MOVE],
         Cost: 200
@@ -85,10 +89,20 @@ var RequirementRun = function(room) {
 var KeeperHarvester = function(room) {
 	// 需求计算
 	var RequireTotal = 0;
-	var sources = room.memory.Sources;
-	for (var id in sources) {
-		RequireTotal += sources[id].CollectableNum;
+	var bodys = [];
+	if (room.energyCapacityAvailable >= BodyElement.MaxHarvester.Cost) {		
+		bodys = BuildBody(1, BodyElement.MaxHarvester.Body);
+		RequireTotal = _.size(room.memory.Sources);
+	} else {
+		var bodyGroupNum = _.floor(room.energyCapacityAvailable / BodyElement.WORK.Cost);		
+		bodys = BuildBody(bodyGroupNum, BodyElement.WORK.Body);
+
+		var sources = room.memory.Sources;
+		for (var id in sources) {
+			RequireTotal += sources[id].CollectableNum;
+		}
 	}
+
 	room.memory.CreepRequire.harvester.RequireTotal = RequireTotal;
 
 	// 提交队列
@@ -96,16 +110,16 @@ var KeeperHarvester = function(room) {
 	var HarvesterNum = room.memory.CreepState.harvester;
 	var SpawnRequire = RequireTotal - (HarvesterNum + InSpawnQueue);
 	for (var i=0; i < SpawnRequire; i++) {
-		var bodyGroupNum = _.floor(room.energyCapacityAvailable / BodyElement.WORK.Cost);		
-		var bodys = BuildBody(bodyGroupNum, BodyElement.WORK.Body);
 		factorySpawn.request(room, "harvester", bodys, "harvester", room.name);
 	}
 }
 
 var KeeperUpgrader = function(room) {
 	// 需求计算
-	var RequireTotal = 3;
+	var RequireTotal = 4;
 	room.memory.CreepRequire.upgrader.RequireTotal = RequireTotal;
+
+	//console.log(`room energy state [${room.energyAvailable} / ${room.energyCapacityAvailable}]`);
 
 	// 提交队列
 	var InSpawnQueue = room.memory.CreepRequire.upgrader.InSpawnQueue;
@@ -142,14 +156,31 @@ var KeeperBuilder = function(room) {
 }
 
 var KeeperStevedore = function(room) {
+	// 需求计算
+	var RequireTotal = 1;
 
+	room.memory.CreepRequire.stevedore.RequireTotal = RequireTotal;
+
+	// 提交队列
+	var InSpawnQueue = room.memory.CreepRequire.stevedore.InSpawnQueue;
+	var stevedoreNum = room.memory.CreepState.stevedore;
+	var SpawnRequire = RequireTotal - (stevedoreNum + InSpawnQueue);
+	for (var i=0; i < SpawnRequire; i++) {
+		var bodyGroupNum = _.floor(room.energyCapacityAvailable / BodyElement.WORK.Cost);;
+		var bodys = BuildBody(bodyGroupNum, BodyElement.CARRY.Body);
+		factorySpawn.request(room, "stevedore", bodys, "distribute", room.name);
+	}
 }
 
 var KeeperCollect = function(room) {
 	// 需求计算
 	var RequireTotal = 0;
 	if (room.memory.container) {
-		RequireTotal = _.size(room.memory.container);
+		if (room.controller.level <= 3){
+			RequireTotal = 1;
+		} else {
+			RequireTotal = _.size(room.memory.container);	
+		}		
 	}
 	room.memory.CreepRequire.collect.RequireTotal = RequireTotal;
 
@@ -184,8 +215,8 @@ var KeeperSoldier = function(room) {
 	for (var i=0; i < SpawnRequire; i++) {
 		var bodyGroupNum = _.floor(room.energyCapacityAvailable / BodyElement.ATTACK.Cost);		
 		var bodys = BuildBody(bodyGroupNum, BodyElement.ATTACK.Body);
-		factorySpawn.request(room, "soldier", bodys, "attack", room.name);
-	}	
+		factorySpawn.request(room, "soldier", bodys, "defense", room.name);
+	}
 }
 
 var KeeperScout = function(room) {

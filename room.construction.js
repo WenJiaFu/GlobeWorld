@@ -1,5 +1,5 @@
 var InitConstructionSite = function(room) {
-    if (!room.memory.construction) {
+    if (_.isUndefined(room.memory.construction)) {
         room.memory.construction = 0;
         console.log("wrote [" + room.name + "] room.memory.construction");
     }
@@ -11,7 +11,7 @@ var UpdateConstructionSite = function(room) {
 }
 
 var AutoConstruct = function(room) {
-    // construct road from [Spawn] to [Source]    
+    // construct road from [Spawn] to [Source]
     var Sources = room.memory.Sources;
     for (var id in Sources) {        
         if (_.isUndefined(Sources[id].pathReached)) {
@@ -31,6 +31,20 @@ var AutoConstruct = function(room) {
             }
         }
     }
+
+    // construct road from [Spawn] to [Controller]    
+    if (room.controller.my && (room.memory.controller && !room.memory.controller.pathReached)) {
+        var spawn = room.find(FIND_STRUCTURES, {
+            filter: (structure) => {
+                return (structure.structureType == STRUCTURE_SPAWN && !structure.spawning);
+            }
+        })[0];
+
+        if (spawn) {
+            room.PaveRoad(spawn.pos, room.controller.pos);
+            room.memory.controller.pathReached = true;
+        }
+    }    
 }
 
 var roomConstructionSite = {

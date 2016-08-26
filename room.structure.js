@@ -1,5 +1,9 @@
 var towerNormal = require('tower.normal');
 
+function ControllerObj() {
+	this.pathReached = false;
+}
+
 // 能源(source)对象声明
 function SourceObj(pos) {
     this.pos = pos;
@@ -37,7 +41,7 @@ var ScanCollectableNum = function(Room, SourcePos) {
 var InitSource = function(room) {
     if (room.memory.Sources) {
         delete room.memory.Sources;
-        console.log("Clearing room.memroy.sources..");
+        console.log("Clearing room.memroy.Sources..");
     }
     
     room.memory.Sources = new Object();
@@ -57,9 +61,22 @@ var InitSource = function(room) {
     }
 }
 
+// 初始化房间内的Controller
+var InitController = function(room) {
+	if (room.memory.controller) {
+        delete room.memory.controller;
+        console.log("Clearing room.memroy.controller..");
+    }
+    
+    var newController = new ControllerObj();
+    room.memory.controller = newController;
+	console.log("wrote [" + room.name + "] memory.controller");
+}
+
 var InitRoom = function(room) {
 	if (!room.memory.init) {
 		InitSource(room);
+		InitController(room);
 
         room.memory.init = true;
         console.log("Room[" + room.name + "] initialization has completed.");

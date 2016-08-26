@@ -12,7 +12,7 @@ var FindDischargeContainer = function(RoomName, CarryCapacity) {
 
 	var containers = Memory.rooms[RoomName].container;
 	for (var id in containers) {
-		if (containers[id].storeEnergy > CarryCapacity) {
+		if (containers[id].storeEnergy >= CarryCapacity) {
 			findContainer = Game.getObjectById(id);			
 			break;
 		}

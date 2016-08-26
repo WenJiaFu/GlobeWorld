@@ -7,8 +7,7 @@ function SpawnRequest() {
 	this.initState = "";
 	this.roleType = "";
 	this.bodys = [];
-	this.workRoom = "";
-	return this;
+	this.workRoom = "";	
 };
 
 // 生成Creep
@@ -46,7 +45,16 @@ var SpawnCreep = function (room) {
 	if (SpawnSqueue.length > 0) {
 		SpawnRequest = SpawnSqueue[0];
 		var Spawn = ChooseIdleSpawn(room);
-		if (Spawn) {						
+		if (Spawn) {
+			// 检测是否可生产
+			var CreepCost = Spawn.creepCost(SpawnRequest.bodys);
+			if (CreepCost > room.energyCapacityAvailable) {
+				SpawnSqueue.shift();
+				console.log("Factory Spawn - Cann't spawn " 
+					+ SpawnRequest.roleType + ", energy capacity[" + room.energyCapacityAvailable + "] is not enough.");
+				return ;
+			}
+
 			var creepMemory = {
 				role: SpawnRequest.roleType,
 				state: SpawnRequest.initState,
