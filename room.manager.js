@@ -10,6 +10,7 @@ var factorySpawn = require('factory.spawn');
 // 房间Creep状态
 function CreepState() {    
     this.harvester = 0;
+    this.harvesterFixed = 0;
     this.upgrader = 0;
     this.builder = 0;
     this.stevedore = 0;
@@ -29,6 +30,7 @@ var StatCreep = function(room) {
     //console.log("harvester:" + StatCreepType(room, "harvester"));
     if (_.isObject(room.memory.CreepState)) {
         room.memory.CreepState.harvester = StatCreepType(room, "harvester");
+        room.memory.CreepState.harvesterFixed = StatCreepType(room, "harvesterFixed");        
         room.memory.CreepState.upgrader = StatCreepType(room, "upgrader");
         room.memory.CreepState.builder = StatCreepType(room, "builder");
         room.memory.CreepState.stevedore = StatCreepType(room, "stevedore");

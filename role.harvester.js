@@ -7,7 +7,7 @@ var State = {
 };
 
 var Init = function(creep) {
-    var id = creep.memory.PreAllocate;
+    var id = creep.memory.preAllocate;
     creep.AllocateSource(id);
 }
 
@@ -31,7 +31,7 @@ var Harvest = function(creep) {
 }
 
 var Store = function(creep) {
-    // 无回收工人时，过滤掉Containter    
+    // 无回收工人时，过滤掉Containter
     var wantContainter = creep.room.memory.CreepState.collect > 0;
     var store = creep.FindStorableForStore(wantContainter);
     var linkIn = creep.room.GetLink("IN");
@@ -48,8 +48,22 @@ var Store = function(creep) {
         if (ret == ERR_NOT_IN_RANGE) {
             creep.moveTo(target);
         }
-    } else if (creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
-        creep.moveTo(creep.room.controller);
+    } else {
+        if (creep.room.controller.level <= 2) {
+            let targets = creep.room.find(FIND_CONSTRUCTION_SITES);
+            if (targets.length > 0) {
+                var nearestSite = creep.pos.findClosestByRange(targets);
+                var ret = creep.build(nearestSite);
+                if (ret == ERR_NOT_IN_RANGE) {
+                    creep.moveTo(nearestSite);
+                }
+                return;
+            }
+        }
+
+        if (creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
+            creep.moveTo(creep.room.controller);
+        }
     }
 }
 

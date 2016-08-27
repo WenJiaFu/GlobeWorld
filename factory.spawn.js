@@ -82,9 +82,13 @@ var SpawnCreep = function (room) {
 var UnshiftRequest = function(room, roleType, bodys, initState, workRoom, allocateId) {
 	if (_.isArray(bodys) && bodys.length > 0) {		
 		var newRequest = new SpawnRequest(roleType, bodys, initState, workRoom, allocateId);
-		if (_.isArray(room.memory.SpawnSqueue) && room.memory.CreepRequire[roleType]) {
+		if (_.isArray(room.memory.SpawnSqueue) && room.memory.SpawnSqueue.length < 50 && room.memory.CreepRequire[roleType]) {
 			room.memory.SpawnSqueue.unshift(newRequest);			
 			room.memory.CreepRequire[roleType].InSpawnQueue++;
+		} else {
+			var dropRightLength = room.memory.SpawnSqueue.length - 50;
+			console.log("UnshiftRequest drop right:" + dropRightLength);
+			room.memory.SpawnSqueue = _.dropRight(room.memory.SpawnSqueue, dropRightLength);
 		}
 		console.log(`FactorySpawn unshift [${roleType}] to workRoom[${workRoom}] | SquLen[${room.memory.SpawnSqueue.length}]`);
 	} else {
@@ -95,9 +99,13 @@ var UnshiftRequest = function(room, roleType, bodys, initState, workRoom, alloca
 var PushRequest = function(room, roleType, bodys, initState, workRoom, allocateId) {
 	if (_.isArray(bodys) && bodys.length > 0) {		
 		var newRequest = new SpawnRequest(roleType, bodys, initState, workRoom, allocateId);
-		if (_.isArray(room.memory.SpawnSqueue)) {
+		if (_.isArray(room.memory.SpawnSqueue) && room.memory.SpawnSqueue.length < 50) {
 			room.memory.SpawnSqueue.push(newRequest);
 			room.memory.CreepRequire[roleType].InSpawnQueue++;
+		} else {			
+			var dropRightLength = room.memory.SpawnSqueue.length - 50;
+			console.log("PushRequest drop right:" + dropRightLength);
+			room.memory.SpawnSqueue = _.dropRight(room.memory.SpawnSqueue, dropRightLength);
 		}
 		console.log(`FactorySpawn push [${roleType}] to workRoom[${workRoom}] | SquLen[${room.memory.SpawnSqueue.length}]`);
 	} else {

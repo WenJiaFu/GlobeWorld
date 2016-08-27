@@ -107,15 +107,17 @@ var RequirementInit = function(room) {
 	}
 };
 
-var RequirementRun = function(room) {	
-	KeeperHarvester(room);
-	KeeperUpgrader(room);
-	KeeperBuilder(room);
-	KeeperStevedore(room);
-	KeeperCollect(room);
-	KeeperPioneer(room);
-	KeeperSoldier(room);
-	KeeperScout(room);
+var RequirementRun = function(room) {
+	if (room.energyCapacityAvailable > 0) {
+		KeeperHarvester(room);
+		KeeperUpgrader(room);
+		KeeperBuilder(room);
+		KeeperStevedore(room);
+		KeeperCollect(room);
+		KeeperPioneer(room);
+		KeeperSoldier(room);
+		KeeperScout(room);
+	}
 };
 
 var KeeperHarvester = function(room) {
@@ -145,7 +147,8 @@ var KeeperHarvester = function(room) {
 
 var KeeperUpgrader = function(room) {
 	// 需求计算
-	var RequireTotal = 3;
+	var RequireTotal = 0;
+	RequireTotal = _.min([3, room.controller.level]);	
 	room.memory.CreepRequire.upgrader.RequireTotal = RequireTotal;
 
 	// 提交队列

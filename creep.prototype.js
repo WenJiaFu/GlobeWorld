@@ -100,6 +100,7 @@ Creep.prototype.AllocateSource = function(allocateId) {
     let source = undefined;
     if (allocateId) {
         source = Game.getObjectById(allocateId);
+        console.log("Direct allocate source[" + allocateId + "] to " + this.name);
     } else {
         source = this.FindClosestSource();
     }

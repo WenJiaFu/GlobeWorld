@@ -12,6 +12,8 @@ var memoryCleanup = require('memory.cleanup');
 
 module.exports.loop = function () 
 {
+    //console.log("loop begin - limit: " + Game.cpu.limit + " tickLimit: " + Game.cpu.tickLimit + " bucket: " + Game.cpu.bucket);
+
 	var BeginCPU = Game.cpu.getUsed();
 
     // 房间调度
@@ -33,5 +35,5 @@ module.exports.loop = function ()
 	var CleanCost = CleanCPU - BehaviorCPU;	
 
 	// console.log("ScheduleCost: " + ScheduleCost.toFixed(2) + " BehaviorCost: " + BehaviorCost.toFixed(2) + " CleanCost: " + CleanCost.toFixed(2));
- //    console.log("limit: " + Game.cpu.limit + " tickLimit: " + Game.cpu.tickLimit + " bucket: " + Game.cpu.bucket);
+ //    console.log("loop end - limit: " + Game.cpu.limit + " tickLimit: " + Game.cpu.tickLimit + " bucket: " + Game.cpu.bucket);
 }

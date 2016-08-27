@@ -30,6 +30,10 @@ var ScanCollectableNum = function(Room, SourcePos) {
     var AreaTerrain = Room.lookForAtArea(LOOK_TERRAIN, top, left, bottom, right, true);
     var CollectableNum = 0;
     for (var index in AreaTerrain){
+    	if (AreaTerrain[index].x == SourcePos.x && AreaTerrain[index].y == SourcePos.y) {
+    		continue;
+    	}
+
         if (AreaTerrain[index].terrain == "plain") {
             CollectableNum++;
         }
