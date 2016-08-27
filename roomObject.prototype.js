@@ -19,6 +19,9 @@ RoomObject.prototype.IncreaseSourceAssigned = function() {
     return CurAllowedAssigned;
 };
 
+// 控制器原型
+StructureController.prototype.pathReached = false;
+
 var roomObjectPrototype = {
     
 }

@@ -1,5 +1,7 @@
 // 采矿(harvester)
-Game.spawns['Spawn1'].createCreep( [WORK,WORK,CARRY,MOVE], undefined, { role: 'harvester', workRoom: 'sim'});
+Game.spawns['Spawn1'].createCreep( [WORK,CARRY,MOVE], undefined, { role: 'harvester', workRoom: 'sim'});
+Game.spawns['Spawn1'].createCreep( [WORK,WORK,MOVE], undefined, { role: 'harvester.fixed', workRoom: 'sim', state: 'init', preAllocate: '0f24b9d26ef7b6314ca609f0'});
+
 Game.spawns['Spawn1'].createCreep( [WORK,WORK,CARRY,MOVE], undefined, { role: 'harvester'} );
 Game.spawns['Spawn1'].createCreep( [MOVE], "mover");
 

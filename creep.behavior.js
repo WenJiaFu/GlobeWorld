@@ -1,5 +1,6 @@
 // 角色模块
 var roleHarvester = require('role.harvester');
+var roleHarvesterFixed = require('role.harvester.fixed');
 var roleUpgrader = require('role.upgrader');
 var roleBuilder = require('role.builder');
 var roleStevedore = require('role.stevedore');
@@ -16,6 +17,8 @@ var RunningCreep = function(creep) {
 
         if (creep.memory.role == 'harvester') {
             roleHarvester.run(creep);
+        } else if (creep.memory.role == 'harvesterFixed') {            
+            roleHarvesterFixed.run(creep);
         } else if (creep.memory.role == 'upgrader') {
             roleUpgrader.run(creep);
         } else if (creep.memory.role == 'builder') {

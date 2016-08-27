@@ -73,8 +73,9 @@ var roleBuilder = {
                     MoveToRoom(creep, targets[0].room.name);
                 } else {
                     var nearestSite = creep.pos.findClosestByRange(targets);
-                    if (creep.build(nearestSite) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(nearestSite);
+                    var ret = creep.build(nearestSite);                    
+                    if (ret == ERR_NOT_IN_RANGE) {
+                        creep.moveTo(nearestSite);                        
                     }
                 }
             } else {

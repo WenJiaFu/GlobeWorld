@@ -1,9 +1,15 @@
 // 采集者状态
 var State = {
+    Init: "init",
     Harvest: "harvest",
     Store: "store",
     Suicide: "suicide"
 };
+
+var Init = function(creep) {
+    var id = creep.memory.PreAllocate;
+    creep.AllocateSource(id);
+}
 
 var Harvest = function(creep) {
     var source = creep.GetAllocatedObject();
@@ -14,21 +20,13 @@ var Harvest = function(creep) {
                 creep.moveTo(source);
                 break;
             case ERR_NOT_ENOUGH_RESOURCES:
-                creep.UnAllocateSource();
+                //creep.UnAllocateSource();
                 break;
             default:
                 //console.log("harvest ret: " + ret);
         }
     } else {
-        creep.AllocateSource();
-    }
-
-    // 采集达到最大值直接Store      
-    //console.log(`energy: ${creep.carry.energy} creep.carryCapacity: ${creep.carryCapacity}`);
-    if (creep.carry.energy == creep.carryCapacity) {
-        console.log("直接存储");
-        var store = creep.FindStorableForStore(true);
-        creep.transfer(store, RESOURCE_ENERGY);
+        //console.log(`creep[${creep.name}] harvest hasn't allocate source object`);
     }
 }
 
@@ -56,6 +54,7 @@ var Store = function(creep) {
 }
 
 var GoingToSuicide = function(creep) {
+    creep.say("Suicide");
     var container = creep.FindClosestContainer();
     if (container) {
         var ret = creep.transfer(container, RESOURCE_ENERGY);
@@ -72,27 +71,28 @@ var roleHarvester = {
 
     /** @param {Creep} creep **/
     run: function(creep) {
-        if (creep.memory.harvesting && creep.carry.energy == creep.carryCapacity) {
-            if (creep.UnAllocateSource()) {
-                creep.memory.harvesting = false;
-                creep.say('store');
-            }
-        } else if (!creep.memory.harvesting && creep.carry.energy == 0) {
-            if (creep.AllocateSource()) {
-                creep.memory.harvesting = true;
-                creep.say('harvesting');
-            }
+        let SuicideTick = 30;
+
+        // 初始状态
+        if (creep.memory.state == State.Init) {
+            Init(creep);
+            creep.memory.state = State.Harvest;
         }
 
-        var SuicideTick = 30;
-        if (creep.ticksToLive < SuicideTick) {
-            creep.say("Suicide");
+        // 状态运行
+        if (creep.memory.state == State.Harvest && creep.carry.energy == creep.carryCapacity) {            
+            creep.memory.state = State.Store;
+        } else if (creep.memory.state == State.Store && creep.carry.energy == 0) {
+            creep.memory.state = State.Harvest;
+        } else if (creep.ticksToLive < SuicideTick) {
+            creep.memory.state = State.Suicide;
+        }
+
+        if (creep.memory.state == State.Suicide) {
             GoingToSuicide(creep);
-        } else if (creep.memory.harvesting) {
-            //creep.say("Harvest");
+        } else if (creep.memory.state == State.Harvest) {
             Harvest(creep);
-        } else {
-            //creep.say("Store");
+        } else if (creep.memory.state == State.Store) {
             Store(creep);
         }
     }

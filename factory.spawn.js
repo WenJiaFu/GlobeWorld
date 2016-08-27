@@ -3,11 +3,12 @@
 // -从队列中按优先级生成机器人
 
 // Creep生成请求
-function SpawnRequest() {	
-	this.initState = "";
-	this.roleType = "";
-	this.bodys = [];
-	this.workRoom = "";	
+function SpawnRequest(roleType, bodys, initState, workRoom, allocateId) {	
+	this.initState = initState;
+	this.roleType = roleType;
+	this.bodys = bodys;
+	this.workRoom = workRoom;
+	this.preAllocate = allocateId;
 };
 
 // 生成Creep
@@ -43,8 +44,8 @@ var SpawnCreep = function (room) {
 	// 从生产队列中取出优先级最高的Creep,开始生产	
 	var SpawnSqueue = room.memory.SpawnSqueue;
 	if (SpawnSqueue.length > 0) {
-		SpawnRequest = SpawnSqueue[0];
-		var Spawn = ChooseIdleSpawn(room);
+		let SpawnRequest = SpawnSqueue[0];
+		let Spawn = ChooseIdleSpawn(room);
 		if (Spawn) {
 			// 检测是否可生产
 			var CreepCost = Spawn.creepCost(SpawnRequest.bodys);
@@ -60,9 +61,13 @@ var SpawnCreep = function (room) {
 				state: SpawnRequest.initState,
 				workRoom: SpawnRequest.workRoom 
 			};
-			
+
 			var newName = Spawn.createCreep(SpawnRequest.bodys, undefined, creepMemory);
-			if (_.isString(newName)) {				
+			if (_.isString(newName)) {
+				if (_.isString(SpawnRequest.preAllocate) && SpawnRequest.preAllocate.length > 0) {					
+					creepMemory.preAllocate = SpawnRequest.preAllocate;
+				}
+
 				var roleType = SpawnRequest.roleType;				
 				--room.memory.CreepRequire[roleType].InSpawnQueue;
 				SpawnSqueue.shift();
@@ -74,18 +79,27 @@ var SpawnCreep = function (room) {
 	}
 }
 
-var PushRequest = function(room, roleType, bodys, initState, workRoom) {		
+var UnshiftRequest = function(room, roleType, bodys, initState, workRoom, allocateId) {
 	if (_.isArray(bodys) && bodys.length > 0) {		
-		//var newRequest = new SpawnRequest();
-		var newRequest = new Object();
-		newRequest.roleType = roleType;		
-		newRequest.bodys = bodys;
-		newRequest.initState = initState;
-		newRequest.workRoom = workRoom;
+		var newRequest = new SpawnRequest(roleType, bodys, initState, workRoom, allocateId);
+		if (_.isArray(room.memory.SpawnSqueue) && room.memory.CreepRequire[roleType]) {
+			room.memory.SpawnSqueue.unshift(newRequest);			
+			room.memory.CreepRequire[roleType].InSpawnQueue++;
+		}
+		console.log(`FactorySpawn unshift [${roleType}] to workRoom[${workRoom}] | SquLen[${room.memory.SpawnSqueue.length}]`);
+	} else {
+		console.log("PushRequest failed. bodys is empty.");
+	}
+}
+
+var PushRequest = function(room, roleType, bodys, initState, workRoom, allocateId) {
+	if (_.isArray(bodys) && bodys.length > 0) {		
+		var newRequest = new SpawnRequest(roleType, bodys, initState, workRoom, allocateId);
 		if (_.isArray(room.memory.SpawnSqueue)) {
 			room.memory.SpawnSqueue.push(newRequest);
 			room.memory.CreepRequire[roleType].InSpawnQueue++;
 		}
+		console.log(`FactorySpawn push [${roleType}] to workRoom[${workRoom}] | SquLen[${room.memory.SpawnSqueue.length}]`);
 	} else {
 		console.log("PushRequest failed. bodys is empty.");
 	}
@@ -101,9 +115,13 @@ var factorySpawn = {
     	SpawnCreep(room);
 	},
 
-    request: function(room, roleType, bodys, initState, workRoom) {
-    	//console.log("roleType:" + roleType);
-    	PushRequest(room, roleType, bodys, initState, workRoom);
+    request: function(room, roleType, bodys, initState, workRoom, allocateId, isUnshift) {    	
+		if (isUnshift === true) {
+			UnshiftRequest(room, roleType, bodys, initState, workRoom, allocateId);			
+		} else {
+			PushRequest(room, roleType, bodys, initState, workRoom, allocateId);
+		}
+    	
         //return true;
     }
 }

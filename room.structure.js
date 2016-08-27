@@ -6,10 +6,11 @@ function ControllerObj() {
 
 // 能源(source)对象声明
 function SourceObj(pos) {
-    this.pos = pos;
-    this.assigned = new Object();
-    this.allowedAssigned = 0;
-    this.pathReached = false;
+	this.pos = pos;
+	this.assigned = new Object();
+	this.allowedAssigned = 0;
+	this.needAssigned = true;
+	this.pathReached = false;
 }
 
 // 工路(Road)对象声明
@@ -53,7 +54,7 @@ var InitSource = function(room) {
         var id = source.id;
         sourceObj.CollectableNum = ScanCollectableNum(room, sourceObj.pos);
         sourceObj.allowedAssigned = sourceObj.CollectableNum * 2;
-        room.memory.Sources[id] = sourceObj;
+        room.memory.Sources[id] = sourceObj;        
 
         console.log("wrote [" + room.name + "] memory.Sources ->"
         + " source" + source.pos

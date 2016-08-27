@@ -32,5 +32,6 @@ module.exports.loop = function ()
 	var CleanCPU = Game.cpu.getUsed();
 	var CleanCost = CleanCPU - BehaviorCPU;	
 
-	//console.log("ScheduleCost: " + ScheduleCost + " BehaviorCost: " + BehaviorCost + " CleanCost: " + CleanCost);
+	// console.log("ScheduleCost: " + ScheduleCost.toFixed(2) + " BehaviorCost: " + BehaviorCost.toFixed(2) + " CleanCost: " + CleanCost.toFixed(2));
+ //    console.log("limit: " + Game.cpu.limit + " tickLimit: " + Game.cpu.tickLimit + " bucket: " + Game.cpu.bucket);
 }

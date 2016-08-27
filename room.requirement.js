@@ -6,9 +6,9 @@ var factorySpawn = require('factory.spawn');
 
 // Body组合元素
 var BodyElement = {
-	MaxHarvester: {
-		Body: [WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, MOVE],
-        Cost: 600
+	HarvesterFixed: {
+		Body: [WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, MOVE],
+        Cost: 700
 	},
     WORK: {
         Body: [WORK, CARRY, MOVE],
@@ -41,6 +41,7 @@ function RequirementState() {
 // Creep需求对象
 function CreepRequire() {
 	this.harvester = new RequirementState();
+	this.harvesterFixed = new RequirementState();
 	this.upgrader = new RequirementState();
 	this.builder = new RequirementState();
 	this.stevedore = new RequirementState();
@@ -68,6 +69,37 @@ var BuildBody = function (BodyGroupNum, BaseBodyItem) {
     return BodyGroup;
 };
 
+// 已分配多少采集者
+var CountHarverster = function(assigned) {
+	var harvesterNum = 0;	
+	for (var name in assigned) {
+		if (Memory.creeps[name].role == "harvester" || Memory.creeps[name].role == "harvester.fixed") {
+			harvesterNum++;
+		}
+	}
+
+	console.log("CountHarverster:" + harvesterNum);
+	return harvesterNum;
+}
+
+// Source周围(9宫格内)有Container
+var HasContainerAround = function(Room, CheckPos) {
+    var top = CheckPos.y - 1;
+    var left = CheckPos.x - 1;
+    var bottom = CheckPos.y + 1;
+    var right = CheckPos.x + 1;
+    
+    var LookArea = Room.lookForAtArea(LOOK_STRUCTURES, top, left, bottom, right, true);
+    var ContainerNum = 0;
+    for (var index in LookArea){
+        if (LookArea[index].structureType == STRUCTURE_CONTAINER) {
+            ContainerNum++;
+        }
+    }
+    
+    return ContainerNum;
+}
+
 var RequirementInit = function(room) {
 	if (!room.memory.CreepRequire) {
 		room.memory.CreepRequire = new CreepRequire();
@@ -87,39 +119,34 @@ var RequirementRun = function(room) {
 };
 
 var KeeperHarvester = function(room) {
-	// 需求计算
-	var RequireTotal = 0;
-	var bodys = [];
-	if (room.energyCapacityAvailable >= BodyElement.MaxHarvester.Cost) {		
-		bodys = BuildBody(1, BodyElement.MaxHarvester.Body);
-		RequireTotal = _.size(room.memory.Sources);
-	} else {
-		var bodyGroupNum = _.floor(room.energyCapacityAvailable / BodyElement.WORK.Cost);		
-		bodys = BuildBody(bodyGroupNum, BodyElement.WORK.Body);
+	// 维护每个Source的采集者数量
+	var sources = room.memory.Sources;
+	var initState = "init";
+	for (var id in sources) {
+		if (room.memory.Sources[id].needAssigned) {
+			room.memory.Sources[id].needAssigned = false;
 
-		var sources = room.memory.Sources;
-		for (var id in sources) {
-			RequireTotal += sources[id].CollectableNum;
+			var bodys = [];
+			var CanSpawnFixed = (room.energyCapacityAvailable >= BodyElement.HarvesterFixed.Cost) && room.HasContainerAround(sources[id].pos);
+			if (CanSpawnFixed) {
+				bodys = BuildBody(1, BodyElement.HarvesterFixed.Body);
+				factorySpawn.request(room, "harvesterFixed", bodys, initState, room.name, id, true);
+			} else {
+				var harNum = CountHarverster(room.memory.Sources[id].assigned);
+				for (var i = harNum; i < sources[id].CollectableNum; i++) {
+					var bodyGroupNum = _.floor(room.energyCapacityAvailable / BodyElement.WORK.Cost);
+					bodys = BuildBody(bodyGroupNum, BodyElement.WORK.Body);
+					factorySpawn.request(room, "harvester", bodys, initState, room.name, id, true);
+				}
+			}			
 		}
-	}
-
-	room.memory.CreepRequire.harvester.RequireTotal = RequireTotal;
-
-	// 提交队列
-	var InSpawnQueue = room.memory.CreepRequire.harvester.InSpawnQueue;
-	var HarvesterNum = room.memory.CreepState.harvester;
-	var SpawnRequire = RequireTotal - (HarvesterNum + InSpawnQueue);
-	for (var i=0; i < SpawnRequire; i++) {
-		factorySpawn.request(room, "harvester", bodys, "harvester", room.name);
 	}
 }
 
 var KeeperUpgrader = function(room) {
 	// 需求计算
-	var RequireTotal = 4;
+	var RequireTotal = 3;
 	room.memory.CreepRequire.upgrader.RequireTotal = RequireTotal;
-
-	//console.log(`room energy state [${room.energyAvailable} / ${room.energyCapacityAvailable}]`);
 
 	// 提交队列
 	var InSpawnQueue = room.memory.CreepRequire.upgrader.InSpawnQueue;
@@ -157,7 +184,10 @@ var KeeperBuilder = function(room) {
 
 var KeeperStevedore = function(room) {
 	// 需求计算
-	var RequireTotal = 1;
+	var RequireTotal = 0;
+	if (room.storage) {
+		RequireTotal = 1;
+	}
 
 	room.memory.CreepRequire.stevedore.RequireTotal = RequireTotal;
 

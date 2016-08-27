@@ -50,6 +50,42 @@ Room.prototype.GetLink = function(InOrOut) {
     }
 }
 
+// 检测房间指定位置周围(9宫格内)是否有Container
+Room.prototype.HasContainerAround = function(CheckPos) {
+    var top = CheckPos.y - 1;
+    var left = CheckPos.x - 1;
+    var bottom = CheckPos.y + 1;
+    var right = CheckPos.x + 1;
+    
+    var LookArea = this.lookForAtArea(LOOK_STRUCTURES, top, left, bottom, right, true);
+    var ContainerNum = 0;
+
+    for (var index in LookArea){
+        if (LookArea[index].structure.structureType == STRUCTURE_CONTAINER) {
+            ContainerNum++;
+        }
+    }
+    
+    return ContainerNum;
+}
+
+// 找到房间指定位置周围的建筑
+Room.prototype.FindAroundContainer = function(FindPos) {
+    var top = FindPos.y - 1;
+    var left = FindPos.x - 1;
+    var bottom = FindPos.y + 1;
+    var right = FindPos.x + 1;
+    
+    var LookArea = this.lookForAtArea(LOOK_STRUCTURES, top, left, bottom, right, true);
+    for (var index in LookArea){
+        if (LookArea[index].structure.structureType == STRUCTURE_CONTAINER) {
+            return LookArea[index].structure;
+        }
+    }
+    
+    return undefined;
+}
+
 // **
 // 重置房间状态
 // **
