@@ -95,6 +95,16 @@ Room.prototype.Reset = function() {
 }
 
 // **
+// 房间Source资源重分配
+// **
+Room.prototype.ReAllocate = function() {
+    for (var id in this.memory.Sources) {
+        this.memory.Sources[id].needAssigned = true;
+        console.log("Room source[" + id + "] ReAllocate.");
+    }    
+}
+
+// **
 // 杀死房间内所有Creep
 // **
 Room.prototype.KillAll = function() {

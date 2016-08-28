@@ -97,23 +97,22 @@ Creep.prototype.AllocateStorage = function(MinStock) {
 
 // 分配资源
 Creep.prototype.AllocateSource = function(allocateId) {
-    let source = undefined;
+    let sourceId = undefined;
     if (allocateId) {
-        source = Game.getObjectById(allocateId);
+        sourceId = allocateId;
         console.log("Direct allocate source[" + allocateId + "] to " + this.name);
     } else {
-        source = this.FindClosestSource();
+        sourceId = this.FindClosestSource().id;
     }
 
-    if (source) {
-        let id = source.id;
-        this.memory.AllocatedSourceID = id;
-        Memory.rooms[this.room.name].Sources[id].assigned[this.name] = this.id;
+    if (sourceId) {        
+        this.memory.AllocatedSourceID = sourceId;
+        Memory.rooms[this.room.name].Sources[sourceId].assigned[this.name] = this.id;
     } else {
         //console.log("Cann't allocation to source");
     }
     
-    return source;
+    return Game.getObjectById(sourceId);
 }
 
 // 释放分配的资源

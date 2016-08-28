@@ -11,7 +11,7 @@ var roomSchedule = require('room.schedule');
 var memoryCleanup = require('memory.cleanup');
 
 module.exports.loop = function () 
-{
+{      
     //console.log("loop begin - limit: " + Game.cpu.limit + " tickLimit: " + Game.cpu.tickLimit + " bucket: " + Game.cpu.bucket);
 
 	var BeginCPU = Game.cpu.getUsed();

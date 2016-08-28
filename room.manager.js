@@ -20,6 +20,12 @@ function CreepState() {
     this.scout = 0;
 }
 
+// 房间Creep状态
+function EnergyState() {    
+    this.energy = 0;
+    this.energyCapacity = 0;
+}
+
 // 统计房间内某个角色类型数量
 var StatCreepType = function (room, roleName) { 
     var creeps = _.filter(Game.creeps, (creep) => ( creep.memory.role == roleName && creep.memory.workRoom == room.name));
@@ -38,6 +44,22 @@ var StatCreep = function(room) {
         room.memory.CreepState.pioneer = StatCreepType(room, "pioneer");
         room.memory.CreepState.soldier = StatCreepType(room, "soldier");
         room.memory.CreepState.scout = StatCreepType(room, "scout");
+    }
+}
+
+var roomStateUpdate = function(room) {
+    // 房间energy统计
+    if (!room.memory.EnergyState) {
+        room.memory.EnergyState = new EnergyState();
+    }
+
+    room.memory.EnergyState.energy = 0;
+    room.memory.EnergyState.energyCapacity = 0;
+
+    for (var id in room.memory.container) {
+        let container = room.memory.container[id];
+        room.memory.EnergyState.energy += container.storeEnergy;
+        room.memory.EnergyState.energyCapacity += container.storeCapacity;
     }
 }
 
@@ -67,6 +89,9 @@ var ManagerRun = function(room) {
     roomStructure.run(room);
     roomStructure.maintain(room);
     roomStructure.trace(room);
+
+    // 房间状态
+    roomStateUpdate(room);
 
     // 需求更新    
     roomRequirement.run(room);

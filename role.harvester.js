@@ -31,7 +31,7 @@ var Harvest = function(creep) {
 }
 
 var Store = function(creep) {
-    // 无回收工人时，过滤掉Containter
+    // 无回收工人时，过滤掉Containter    
     var wantContainter = creep.room.memory.CreepState.collect > 0;
     var store = creep.FindStorableForStore(wantContainter);
     var linkIn = creep.room.GetLink("IN");
@@ -48,22 +48,8 @@ var Store = function(creep) {
         if (ret == ERR_NOT_IN_RANGE) {
             creep.moveTo(target);
         }
-    } else {
-        if (creep.room.controller.level <= 2) {
-            let targets = creep.room.find(FIND_CONSTRUCTION_SITES);
-            if (targets.length > 0) {
-                var nearestSite = creep.pos.findClosestByRange(targets);
-                var ret = creep.build(nearestSite);
-                if (ret == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(nearestSite);
-                }
-                return;
-            }
-        }
-
-        if (creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
-            creep.moveTo(creep.room.controller);
-        }
+    } else if (creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
+        creep.moveTo(creep.room.controller);
     }
 }
 
@@ -81,6 +67,27 @@ var GoingToSuicide = function(creep) {
     }
 }
 
+var TryToDrop = function(creep) {
+    var StandingOn = creep.room.lookAt(creep.pos);
+    var Containter = _.filter(StandingOn, function(obj) {
+        return obj.type == 'structure' && obj.structure.structureType == "container"
+    })[0];
+
+    let dropSuccess = false;
+    if (Containter) {
+        var CanDropAmount = Containter.structure.storeCapacity - Containter.structure.store[RESOURCE_ENERGY];
+        var dropEnergy = _.min([creep.carry.energy, CanDropAmount]);
+        if (dropEnergy > 0) {
+            creep.drop(RESOURCE_ENERGY, dropEnergy);
+            dropSuccess = true;
+        }
+
+        //console.log(`CanDropAmount: ${CanDropAmount} dropEnergy: ${dropEnergy}`);
+    }
+
+    return dropSuccess;
+}
+
 var roleHarvester = {
 
     /** @param {Creep} creep **/
@@ -94,8 +101,10 @@ var roleHarvester = {
         }
 
         // 状态运行
-        if (creep.memory.state == State.Harvest && creep.carry.energy == creep.carryCapacity) {            
-            creep.memory.state = State.Store;
+        if (creep.memory.state == State.Harvest && creep.carry.energy == creep.carryCapacity) {
+            if (!TryToDrop(creep)) {
+                creep.memory.state = State.Store;
+            }
         } else if (creep.memory.state == State.Store && creep.carry.energy == 0) {
             creep.memory.state = State.Harvest;
         } else if (creep.ticksToLive < SuicideTick) {

@@ -90,7 +90,7 @@ var UnshiftRequest = function(room, roleType, bodys, initState, workRoom, alloca
 			console.log("UnshiftRequest drop right:" + dropRightLength);
 			room.memory.SpawnSqueue = _.dropRight(room.memory.SpawnSqueue, dropRightLength);
 		}
-		console.log(`FactorySpawn unshift [${roleType}] to workRoom[${workRoom}] | SquLen[${room.memory.SpawnSqueue.length}]`);
+		console.log(`FactorySpawn unshift role[${roleType}] to workRoom[${workRoom}] | SqueueLen[${room.memory.SpawnSqueue.length}]`);
 	} else {
 		console.log("PushRequest failed. bodys is empty.");
 	}

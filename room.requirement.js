@@ -77,8 +77,7 @@ var CountHarverster = function(assigned) {
 			harvesterNum++;
 		}
 	}
-
-	console.log("CountHarverster:" + harvesterNum);
+	
 	return harvesterNum;
 }
 
@@ -135,6 +134,7 @@ var KeeperHarvester = function(room) {
 				factorySpawn.request(room, "harvesterFixed", bodys, initState, room.name, id, true);
 			} else {
 				var harNum = CountHarverster(room.memory.Sources[id].assigned);
+				console.log("source[" + id + "] has " + harNum + " harvester allocated.");
 				for (var i = harNum; i < sources[id].CollectableNum; i++) {
 					var bodyGroupNum = _.floor(room.energyCapacityAvailable / BodyElement.WORK.Cost);
 					bodys = BuildBody(bodyGroupNum, BodyElement.WORK.Body);
@@ -147,8 +147,14 @@ var KeeperHarvester = function(room) {
 
 var KeeperUpgrader = function(room) {
 	// 需求计算
-	var RequireTotal = 0;
-	RequireTotal = _.min([3, room.controller.level]);	
+	var RequireTotal = _.min([3, room.controller.level]);
+	//if (room.memory.)
+	if (room.memory.EnergyState) {
+		capacityRate = (room.memory.EnergyState.energy / room.memory.EnergyState.energyCapacity);
+		if (capacityRate > 0.8) {
+			RequireTotal += 2;
+		}
+	}	
 	room.memory.CreepRequire.upgrader.RequireTotal = RequireTotal;
 
 	// 提交队列
