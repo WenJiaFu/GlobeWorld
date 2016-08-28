@@ -28,6 +28,11 @@ var Recycle = function(creep) {
 		if (creep.transfer(store, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
 			creep.moveTo(store);
 		}
+	} else {
+		var tower = creep.FindClosestTower();
+		if (tower) {			
+			creep.TransferEnergyTo(tower);
+		}
 	}
 }
 
@@ -39,10 +44,20 @@ var Collect = function(creep) {
 			creep.moveTo(Container);
 		}
 	} else {
-		var LinkOut = creep.room.GetLink("OUT");
-		if (LinkOut && LinkOut.energy > 0) {
-			if (creep.withdraw(LinkOut, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-				creep.moveTo(LinkOut);
+		// 拾取房间内掉落Energy
+		var DropEnergys = creep.room.find(FIND_DROPPED_ENERGY);
+		if (DropEnergys.length > 0) {
+			creep.say('pickup');
+			var NearestEnergy = creep.pos.findClosestByRange(DropEnergys);
+			if (creep.pickup(NearestEnergy) == ERR_NOT_IN_RANGE) {
+				creep.moveTo(NearestEnergy);
+			}
+		} else {
+			var LinkOut = creep.room.GetLink("OUT");
+			if (LinkOut && LinkOut.energy > 0) {
+				if (creep.withdraw(LinkOut, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+					creep.moveTo(LinkOut);
+				}
 			}
 		}
 	}

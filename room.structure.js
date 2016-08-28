@@ -71,10 +71,9 @@ var InitController = function(room) {
 	if (room.memory.controller) {
         delete room.memory.controller;
         console.log("Clearing room.memroy.controller..");
-    }
+    }    
     
-    var newController = new ControllerObj();
-    room.memory.controller = newController;
+    room.memory.controller = new ControllerObj();
 	console.log("wrote [" + room.name + "] memory.controller");
 }
 
@@ -311,6 +310,7 @@ var roomStructure = {
 	// 运行设施
 	run: function(room) {
 		RunLinks(room);
+		RunningTower(room);
 	},
 
 	// 设施维护

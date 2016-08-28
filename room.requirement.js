@@ -7,8 +7,8 @@ var factorySpawn = require('factory.spawn');
 // Body组合元素
 var BodyElement = {
 	HarvesterFixed: {
-		Body: [WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, MOVE],
-        Cost: 700
+		Body: [WORK, WORK, WORK, WORK, WORK, MOVE, MOVE, MOVE],
+        Cost: 650
 	},
     WORK: {
         Body: [WORK, CARRY, MOVE],
@@ -70,14 +70,15 @@ var BuildBody = function (BodyGroupNum, BaseBodyItem) {
 };
 
 // 已分配多少采集者
-var CountHarverster = function(assigned) {
+var CountHarverster = function(assigned, roleType) {
 	var harvesterNum = 0;	
 	for (var name in assigned) {
-		if (Memory.creeps[name].role == "harvester" || Memory.creeps[name].role == "harvester.fixed") {
-			harvesterNum++;
+		if (Memory.creeps[name].role == roleType){
+			harvesterNum++;		
 		}
 	}
 	
+	console.log("CountHarverster return:" + harvesterNum);
 	return harvesterNum;
 }
 
@@ -128,19 +129,32 @@ var KeeperHarvester = function(room) {
 			room.memory.Sources[id].needAssigned = false;
 
 			var bodys = [];
+			
+			// 房间内不存在任何采集者时
+			if (room.memory.CreepState.harvester == 0 && room.memory.CreepState.harvesterFixed == 0) {
+				var bodyGroupNum = _.max([1, _.floor(room.energyAvailable / BodyElement.WORK.Cost)]);
+				bodys = BuildBody(bodyGroupNum, BodyElement.WORK.Body);
+				factorySpawn.request(room, "harvester", bodys, initState, room.name, id, true);
+				continue;
+			}
+
 			var CanSpawnFixed = (room.energyCapacityAvailable >= BodyElement.HarvesterFixed.Cost) && room.HasContainerAround(sources[id].pos);
 			if (CanSpawnFixed) {
-				bodys = BuildBody(1, BodyElement.HarvesterFixed.Body);
-				factorySpawn.request(room, "harvesterFixed", bodys, initState, room.name, id, true);
+				let harFixedNum = CountHarverster(room.memory.Sources[id].assigned, "harvesterFixed");
+				console.log("source[" + id + "] has " + harFixedNum + " harvesterFixed allocated.");
+				if (harFixedNum == 0) {
+					bodys = BuildBody(1, BodyElement.HarvesterFixed.Body);
+					factorySpawn.request(room, "harvesterFixed", bodys, initState, room.name, id);
+				}
 			} else {
-				var harNum = CountHarverster(room.memory.Sources[id].assigned);
+				var harNum = CountHarverster(room.memory.Sources[id].assigned, "harvester");
 				console.log("source[" + id + "] has " + harNum + " harvester allocated.");
 				for (var i = harNum; i < sources[id].CollectableNum; i++) {
 					var bodyGroupNum = _.floor(room.energyCapacityAvailable / BodyElement.WORK.Cost);
 					bodys = BuildBody(bodyGroupNum, BodyElement.WORK.Body);
 					factorySpawn.request(room, "harvester", bodys, initState, room.name, id, true);
 				}
-			}			
+			}
 		}
 	}
 }
@@ -154,7 +168,7 @@ var KeeperUpgrader = function(room) {
 		if (capacityRate > 0.8) {
 			RequireTotal += 2;
 		}
-	}	
+	}
 	room.memory.CreepRequire.upgrader.RequireTotal = RequireTotal;
 
 	// 提交队列
@@ -215,7 +229,7 @@ var KeeperCollect = function(room) {
 	// 需求计算
 	var RequireTotal = 0;
 	if (room.memory.container) {
-		if (room.controller.level <= 3){
+		if (room.controller.level <= 2){
 			RequireTotal = 1;
 		} else {
 			RequireTotal = _.size(room.memory.container);	
@@ -228,14 +242,31 @@ var KeeperCollect = function(room) {
 	var collectNum = room.memory.CreepState.collect;
 	var SpawnRequire = RequireTotal - (collectNum + InSpawnQueue);
 	for (var i=0; i < SpawnRequire; i++) {
-		var bodyGroupNum = _.floor(room.energyCapacityAvailable / BodyElement.CARRY.Cost);		
+		var bodyGroupNum = _.min([10, _.floor(room.energyCapacityAvailable / BodyElement.CARRY.Cost)]);
 		var bodys = BuildBody(bodyGroupNum, BodyElement.CARRY.Body);
 		factorySpawn.request(room, "collect", bodys, "recycle", room.name);
 	}
 }
 
 var KeeperPioneer = function(room) {
+	// 需求计算
+	var RequireTotal = 0;
+	if (Memory.gameState.needPioneer) {		
+		RequireTotal = 1;
+		Memory.gameState.needPioneer = false;
+	}
+	room.memory.CreepRequire.pioneer.RequireTotal = RequireTotal;
 
+	// 提交队列
+	if (room.energyCapacityAvailable > BodyElement.CLAIM.Cost) {
+		var InSpawnQueue = room.memory.CreepRequire.pioneer.InSpawnQueue;
+		var pioneerNum = room.memory.CreepState.pioneer;
+		var SpawnRequire = RequireTotal - (pioneerNum + InSpawnQueue);
+		for (var i = 0; i < SpawnRequire; i++) {
+			var bodys = BuildBody(1, BodyElement.CLAIM.Body);
+			factorySpawn.request(room, "pioneer", bodys, "explore", room.name);
+		}
+	}
 }
 
 var KeeperSoldier = function(room) {

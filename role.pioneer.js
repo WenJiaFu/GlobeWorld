@@ -7,16 +7,29 @@ var State = {
     Claim: "claim"
 };
 
+var MoveToRoom = function(creep, ToRoom) {
+    console.log("MoveToRoom(" + creep.room.name + "," + ToRoom + ")");
+    var route = Game.map.findRoute(creep.room.name, ToRoom);
+    if (route.length > 0) {
+        //console.log('Now heading to room ' + route[0].room);
+        var exit = creep.pos.findClosestByRange(route[0].exit);
+        creep.moveTo(exit);
+    }
+}
+
 var Explore = function(creep) {
     creep.say("explore");
 
-    var exits = Game.map.describeExits(creep.room.name);
-    var TopRoom = exits[FIND_EXIT_TOP];
-    if (TopRoom) {
-        var exitDir = Game.map.findExit(creep.room, TopRoom);
-        var exit = creep.pos.findClosestByRange(exitDir);
-        creep.moveTo(exit);
-    }
+    var TargetRoom = Memory.gameConfig.wantColony;
+    MoveToRoom(creep, TargetRoom);
+
+    // var exits = Game.map.describeExits(creep.room.name);
+    // var TopRoom = exits[FIND_EXIT_TOP];
+    // if (TopRoom) {
+    //     var exitDir = Game.map.findExit(creep.room, TopRoom);
+    //     var exit = creep.pos.findClosestByRange(exitDir);
+    //     creep.moveTo(exit);
+    // }
 }
 
 var Claim = function(creep) {

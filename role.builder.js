@@ -92,6 +92,13 @@ var roleBuilder = {
                         if (creep.transfer(store, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                             creep.moveTo(store);
                         }
+                    } else {
+                        var target = creep.room.controller;
+                        if (creep.upgradeController(target) == ERR_NOT_IN_RANGE) {
+                            creep.moveTo(creep.room.controller, {
+                                reusePath: 50
+                            });
+                        }
                     }
                 }
             }

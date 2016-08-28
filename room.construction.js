@@ -21,7 +21,7 @@ var AutoConstruct = function(room) {
         if (!Sources[id].pathReached) {
             var spawn = room.find(FIND_STRUCTURES, {
                 filter: (structure) => {
-                    return (structure.structureType == STRUCTURE_SPAWN && !structure.spawning);
+                    return (structure.structureType == STRUCTURE_SPAWN && structure.my && !structure.spawning);
                 }
             })[0];
 
@@ -36,7 +36,7 @@ var AutoConstruct = function(room) {
     if (room.controller.my && (room.memory.controller && !room.memory.controller.pathReached)) {
         var spawn = room.find(FIND_STRUCTURES, {
             filter: (structure) => {
-                return (structure.structureType == STRUCTURE_SPAWN && !structure.spawning);
+                return (structure.structureType == STRUCTURE_SPAWN && structure.my && !structure.spawning);
             }
         })[0];
 

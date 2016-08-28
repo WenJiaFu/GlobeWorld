@@ -6,7 +6,7 @@ var State = {
 };
 
 var Init = function(creep) {
-    var id = creep.memory.PreAllocate;
+    var id = creep.memory.preAllocate;
     creep.AllocateSource(id);
 }
 
@@ -52,7 +52,7 @@ var roleHarvesterFixed = {
     run: function(creep) {
         if (creep.memory.state == State.Init) {
             Init(creep);
-            creep.memory.state = State.MoveTo;
+            creep.memory.state = State.MoveToFixed;
         } else if (creep.memory.state == State.MoveToFixed) {
             if (MoveToFixed(creep)) {
                 creep.memory.state = State.Harvest;
