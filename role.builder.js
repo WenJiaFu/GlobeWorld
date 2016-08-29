@@ -27,7 +27,7 @@ var FindImpairedRoad = function(Room) {
 }
 
 var MoveToRoom = function(creep, ToRoomName) {
-    console.log("MoveToRoom(" + creep.room + "," + ToRoomName + ")");
+    //console.log("MoveToRoom(" + creep.room + "," + ToRoomName + ")");
     var route = Game.map.findRoute(creep.room, ToRoomName);
     if (route.length > 0) {
         //console.log('Now heading to room ' + route[0].room);
@@ -42,7 +42,7 @@ var roleBuilder = {
     run: function(creep) {
 
 	    if(creep.memory.state == State.Building && creep.carry.energy == 0) {
-            if (creep.AllocateStorage(0) || creep.AllocateSource()){
+            if (creep.AllocateStorage(0, creep.carryCapacity) || creep.AllocateSource()){
                 creep.memory.state = State.Harvester;
                 creep.say('harvesting');
             }            
@@ -57,25 +57,19 @@ var roleBuilder = {
         // 优先级 build(修造) > repair(修复)
         if (creep.memory.state == State.Building) {
             var targets = undefined;
-            for (var name in Game.rooms) {
-                var room = Game.rooms[name];
-                targets = room.find(FIND_CONSTRUCTION_SITES);
-                if (targets.length > 0) {
-                    break;
-                }
-            }
-
+            var room = Game.rooms[creep.room.name];
+            targets = room.find(FIND_CONSTRUCTION_SITES);
             if (targets.length) {
                 creep.say('building');
 
-                // 不在一个房间
-                if (targets[0].room.name != creep.room.name) {
-                    MoveToRoom(creep, targets[0].room.name);
-                } else {
+                // 不在一个房间                
+                if (creep.memory.workRoom != creep.room.name) {                    
+                    MoveToRoom(creep, creep.memory.workRoom);
+                } else {                    
                     var nearestSite = creep.pos.findClosestByRange(targets);
                     var ret = creep.build(nearestSite);                    
                     if (ret == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(nearestSite);                        
+                        creep.moveTo(nearestSite);
                     }
                 }
             } else {

@@ -11,18 +11,6 @@ function SpawnRequest(roleType, bodys, initState, workRoom, allocateId) {
 	this.preAllocate = allocateId;
 };
 
-// 生成Creep
-var SpawnCreep = function(RoleType, BodyGroupNum, BaseBodyItem, RoleMemory){
-    var BodyGroup = BuildBody(BodyGroupNum, BaseBodyItem);
-    var newName = Game.spawns['Spawn1'].createCreep(BodyGroup, undefined, RoleMemory);
-    if (_.isString(newName)) {
-        console.log('Spawning new ' + RoleType + ': ' + newName);    
-    }
-    else {
-        //console.log("Spawning failed code: " + newName);
-    }
-}
-
 var InitSpawnQueue = function(room) {
 	if (!room.memory.SpawnSqueue) {
 		room.memory.SpawnSqueue = new Array();
@@ -71,7 +59,7 @@ var SpawnCreep = function (room) {
 				var roleType = SpawnRequest.roleType;				
 				--room.memory.CreepRequire[roleType].InSpawnQueue;
 				SpawnSqueue.shift();
-				console.log('Spawning new ' + SpawnRequest.roleType + ': ' + newName);
+				console.log('Spawning new [' + SpawnRequest.roleType + ']: ' + newName);
 			} else {
 				//console.log('Spawning failed | error code:' + newName);
 			}
@@ -128,9 +116,7 @@ var factorySpawn = {
 			UnshiftRequest(room, roleType, bodys, initState, workRoom, allocateId);			
 		} else {
 			PushRequest(room, roleType, bodys, initState, workRoom, allocateId);
-		}
-    	
-        //return true;
+		}        
     }
 }
 

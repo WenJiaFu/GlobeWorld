@@ -144,7 +144,7 @@ var KeeperHarvester = function(room) {
 				console.log("source[" + id + "] has " + harFixedNum + " harvesterFixed allocated.");
 				if (harFixedNum == 0) {
 					bodys = BuildBody(1, BodyElement.HarvesterFixed.Body);
-					factorySpawn.request(room, "harvesterFixed", bodys, initState, room.name, id);
+					factorySpawn.request(room, "harvesterFixed", bodys, initState, room.name, id, true);
 				}
 			} else {
 				var harNum = CountHarverster(room.memory.Sources[id].assigned, "harvester");

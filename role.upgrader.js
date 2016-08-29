@@ -12,7 +12,7 @@ var roleUpgrader = {
 
         // 状态检测
         if (creep.memory.state == State.Upgrade && creep.carry.energy == 0) {
-            if (creep.AllocateStorage(MinStock) || creep.AllocateSource()) {
+            if (creep.AllocateStorage(MinStock, creep.carryCapacity) || creep.AllocateSource()) {
                 creep.memory.state = State.Harvester;
                 creep.say('harvesting');
             }

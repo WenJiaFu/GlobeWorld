@@ -1,5 +1,5 @@
 function GameConfig() {
-	this.wantColony = "E17S41";
+	this.wantColony = "";
 }
 
 var RefreshConfig = function() {

@@ -33,6 +33,7 @@ var Harvest = function(creep) {
 var Store = function(creep) {
     // 无回收工人时，过滤掉Containter    
     var wantContainter = creep.room.memory.CreepState.collect > 0;
+    //console.log("Store wantContainter[" + wantContainter + "]");
     var store = creep.FindStorableForStore(wantContainter);
     var linkIn = creep.room.GetLink("IN");
     if (linkIn) {
@@ -48,8 +49,17 @@ var Store = function(creep) {
         if (ret == ERR_NOT_IN_RANGE) {
             creep.moveTo(target);
         }
-    } else if (creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
-        creep.moveTo(creep.room.controller);
+    } else{
+        // 控制器等级太低时，优先建造 
+        if (creep.room.controller.level <= 2) {
+            let conSites = creep.room.find(FIND_CONSTRUCTION_SITES);
+            var nearestSite = creep.pos.findClosestByRange(conSites);            
+            if (creep.build(nearestSite) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(nearestSite);
+            }
+        } else if (creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
+            creep.moveTo(creep.room.controller);
+        }
     }
 }
 
