@@ -1,6 +1,7 @@
 var towerNormal = require('tower.normal');
 
-function ControllerObj() {
+function ControllerObj() {	
+	this.level = false;
 	this.pathReached = false;
 	this.prepareStore = false;
 }
@@ -117,6 +118,7 @@ var UpdateStructure = function(room) {
 		}
 	}
 
+	UpdateController(room);
 	//console.log("UpdateStructure Cost:" + (Game.cpu.getUsed() - BeginCPU));
 }
 
@@ -200,6 +202,10 @@ var UpdateContainer = function(container) {
 	}
 
 	//console.log("container.store: " + container.store[RESOURCE_ENERGY]);
+}
+
+var UpdateController = function(room) {
+	room.memory.controller.level = room.controller.level;
 }
 
 // 运转传送器

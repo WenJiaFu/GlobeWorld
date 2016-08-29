@@ -196,32 +196,63 @@ var StepGo = function(origin, direction, stepNum) {
     };
 };
 
-Room.prototype.stats = function() {
-    return {
-        myCreepsCnt: this.find(FIND_MY_CREEPS).length,
-        enemiesCnt: this.find(FIND_HOSTILE_CREEPS).length
-    };
-};
+Room.prototype.CleanFlag = function() {
+    var flags = this.find(FIND_FLAGS);
+    flags.forEach(function(flag) {
+        flag.remove();
+    });
+}
+
+Room.prototype.CanConstruct = function(pos) {
+    var look = this.lookAt(pos.x, pos.y);
+    var canDo = true;
+    look.forEach(function(lookObject) {
+        if (lookObject.type == LOOK_STRUCTURES || (lookObject.type == LOOK_TERRAIN && lookObject[LOOK_TERRAIN] == "wall")) {
+            canDo = false;
+        }
+    });
+
+    //var FlagColor = canDo ? COLOR_GREEN : COLOR_RED;
+    //this.createFlag(pos.x, pos.y, undefined, FlagColor);
+    return canDo;
+}
 
 Room.prototype.AutoExtension = function(CenterPos, ExtensionNum) {
     var StepDirectionOrder = [STEP_TOP, STEP_RIGHT, STEP_BOTTOM, STEP_LEFT];
-    for (var ring = 1; ring <= 1; ring++) {
+    for (var ring = 1; ring <= 5; ring++) {
         // 确定每圈起点
         var StartingPoint = StepGo(CenterPos, STEP_BOTTOM_LEFT, ring);
         var CurrentCheckPoint = StartingPoint;
         for (var index in StepDirectionOrder) {
             // 循环一圈构建
             var StepNum = ring * 2;
-            while(StepNum) {                
+            while (StepNum) {
                 CurrentCheckPoint = StepGo(CurrentCheckPoint, StepDirectionOrder[index], 1);
-                console.log(JSON.stringify(CurrentCheckPoint));
-                StepNum--;
-            }            
-        }
-        //console.log("ring:" + ring);
-    }
+                if (this.CanConstruct(CurrentCheckPoint)) {
+                    let createRoad = StepNum % 2;
+                    if (createRoad) {
+                        this.createConstructionSite(CurrentCheckPoint.x, CurrentCheckPoint.y, STRUCTURE_ROAD);
+                    } else {
+                        this.createConstructionSite(CurrentCheckPoint.x, CurrentCheckPoint.y, STRUCTURE_EXTENSION);
+                        ExtensionNum--;
+                    }
 
-    //console.log(JSON.stringify(StepGo({x:1, y:1}, STEP_TOP)));
+                    if (ExtensionNum == 0) {
+                        return;
+                    }
+
+                    // console.log(`At pos[${CurrentCheckPoint.x},${CurrentCheckPoint.y}] StepNum[${StepNum}] ring[${ring}] Extension[${createRoad}]`);
+                    // let FlagColor = createRoad ? COLOR_GREY : COLOR_YELLOW;
+                    // this.createFlag(CurrentCheckPoint.x, CurrentCheckPoint.y, undefined, FlagColor);
+                } else {
+                    //this.createFlag(CurrentCheckPoint.x, CurrentCheckPoint.y, undefined, COLOR_RED);
+                }
+
+                //console.log(`at pos[${CurrentCheckPoint.x}, ${CurrentCheckPoint.y}] CanConstruct:` + this.CanConstruct(CurrentCheckPoint));
+                StepNum--;
+            }
+        }
+    }
 }
 
 // **
