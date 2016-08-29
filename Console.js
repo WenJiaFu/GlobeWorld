@@ -12,6 +12,9 @@ Game.spawns['Spawn1'].createCreep( [WORK,CARRY,CARRY,CARRY,MOVE], 'upgrader1', {
 // 建造者(builder)
 Game.spawns['Spawn1'].createCreep([WORK, CARRY, CARRY, MOVE], 'builder1', { role: 'builder', workplace: 'sim' });
 
+// 自动扩展
+Game.rooms.E58S41.AutoExtension({x:1, y:1}, 5)
+
 // 自动铺路
 // #Room.prototype.PaveRoad
 //Game.rooms.sim.PaveRoad();

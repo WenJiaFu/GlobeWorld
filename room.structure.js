@@ -2,6 +2,7 @@ var towerNormal = require('tower.normal');
 
 function ControllerObj() {
 	this.pathReached = false;
+	this.prepareStore = false;
 }
 
 // 能源(source)对象声明

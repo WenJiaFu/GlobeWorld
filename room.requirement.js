@@ -73,7 +73,7 @@ var BuildBody = function (BodyGroupNum, BaseBodyItem) {
 var CountHarverster = function(assigned, roleType) {
 	var harvesterNum = 0;	
 	for (var name in assigned) {
-		if (Memory.creeps[name].role == roleType){
+		if (Memory.creeps[name] && Memory.creeps[name].role == roleType){
 			harvesterNum++;		
 		}
 	}
@@ -161,12 +161,11 @@ var KeeperHarvester = function(room) {
 
 var KeeperUpgrader = function(room) {
 	// 需求计算
-	var RequireTotal = _.min([3, room.controller.level]);
-	//if (room.memory.)
+	var RequireTotal = _.min([3, room.controller.level]);	
 	if (room.memory.EnergyState) {
 		capacityRate = (room.memory.EnergyState.energy / room.memory.EnergyState.energyCapacity);
-		if (capacityRate > 0.8) {
-			RequireTotal += 2;
+		if (room.controller.level <= 2 && capacityRate > 0.8) {
+			RequireTotal += 4;
 		}
 	}
 	room.memory.CreepRequire.upgrader.RequireTotal = RequireTotal;

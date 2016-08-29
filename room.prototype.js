@@ -5,6 +5,15 @@ function RoadRepairObj(hits, pos) {
     this.needRepair = true;
 }
 
+var STEP_TOP = {x:0, y:-1};
+var STEP_TOP_RIGHT = {x:1, y:-1};
+var STEP_RIGHT = {x:1, y:0};
+var STEP_BOTTOM_RIGHT = {x:1, y:1};
+var STEP_BOTTOM = {x:0, y:1};
+var STEP_BOTTOM_LEFT = {x:-1, y:1};
+var STEP_LEFT = {x:-1, y:0};
+var STEP_TOP_LEFT = {x:-1, y:-1};
+
 // room属性定义
 Room.prototype.CreepState = {
     harvester: 0,
@@ -179,7 +188,42 @@ Room.prototype.RoleCount = function () {
     console.log("scoutCount : " + scoutCount);    
     console.log("-------------------");
 };
-    
+
+var StepGo = function(origin, direction, stepNum) {
+    return {
+        x: (origin.x + direction.x * stepNum),
+        y: (origin.y + direction.y * stepNum)
+    };
+};
+
+Room.prototype.stats = function() {
+    return {
+        myCreepsCnt: this.find(FIND_MY_CREEPS).length,
+        enemiesCnt: this.find(FIND_HOSTILE_CREEPS).length
+    };
+};
+
+Room.prototype.AutoExtension = function(CenterPos, ExtensionNum) {
+    var StepDirectionOrder = [STEP_TOP, STEP_RIGHT, STEP_BOTTOM, STEP_LEFT];
+    for (var ring = 1; ring <= 1; ring++) {
+        // 确定每圈起点
+        var StartingPoint = StepGo(CenterPos, STEP_BOTTOM_LEFT, ring);
+        var CurrentCheckPoint = StartingPoint;
+        for (var index in StepDirectionOrder) {
+            // 循环一圈构建
+            var StepNum = ring * 2;
+            while(StepNum) {                
+                CurrentCheckPoint = StepGo(CurrentCheckPoint, StepDirectionOrder[index], 1);
+                console.log(JSON.stringify(CurrentCheckPoint));
+                StepNum--;
+            }            
+        }
+        //console.log("ring:" + ring);
+    }
+
+    //console.log(JSON.stringify(StepGo({x:1, y:1}, STEP_TOP)));
+}
+
 // **
 // 房间测试函数
 // **

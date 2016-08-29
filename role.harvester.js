@@ -50,14 +50,19 @@ var Store = function(creep) {
             creep.moveTo(target);
         }
     } else{
-        // 控制器等级太低时，优先建造 
+        // 控制器等级太低时
+        // 优先-建造 
         if (creep.room.controller.level <= 2) {
             let conSites = creep.room.find(FIND_CONSTRUCTION_SITES);
             var nearestSite = creep.pos.findClosestByRange(conSites);            
             if (creep.build(nearestSite) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(nearestSite);
+                return ;
             }
-        } else if (creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
+        }
+
+        // 次级-升级
+        if (creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
             creep.moveTo(creep.room.controller);
         }
     }
