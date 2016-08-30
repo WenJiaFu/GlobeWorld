@@ -163,7 +163,7 @@ var KeeperUpgrader = function(room) {
 	// 需求计算
 	var RequireTotal = _.min([3, room.controller.level]);	
 	if (room.memory.EnergyState) {
-		capacityRate = (room.memory.EnergyState.energy / room.memory.EnergyState.energyCapacity);
+		let capacityRate = (room.memory.EnergyState.energy / room.memory.EnergyState.energyCapacity);
 		if (room.controller.level <= 2 && capacityRate > 0.8) {
 			RequireTotal += 4;
 		}

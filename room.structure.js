@@ -1,7 +1,8 @@
 var towerNormal = require('tower.normal');
+var roomConstruction = require('room.construction');
 
 function ControllerObj() {	
-	this.level = false;
+	this.level = 0;
 	this.pathReached = false;
 	this.prepareStore = false;
 }
@@ -205,6 +206,9 @@ var UpdateContainer = function(container) {
 }
 
 var UpdateController = function(room) {
+	if (room.memory.controller.level < room.controller.level) {
+		roomConstruction.OnControllerUpgrade(room);
+	}
 	room.memory.controller.level = room.controller.level;
 }
 

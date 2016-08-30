@@ -40,7 +40,7 @@ Creep.prototype.BodyCount = function (BodyName){
 
 // 查找到距离最近的可采集资源
 Creep.prototype.FindClosestSource = function() {
-    var NearestSource = null;
+    var NearestSource = undefined;
     var LeastStepNum = 0;
     var Sources = this.room.memory.Sources;
 
@@ -70,37 +70,6 @@ Creep.prototype.FindClosestSource = function() {
     
     return NearestSource;
 };
-AllocateStorage: [{
-    "room": {
-        "name": "E58S41",
-        "mode": "world",
-        "energyAvailable": 450,
-        "energyCapacityAvailable": 450,
-        "CreepState": {
-            "harvester": 0,
-            "upgrader": 0,
-            "builder": 0,
-            "stevedore": 0,
-            "collect": 0,
-            "pioneer": 0,
-            "soldier": 0,
-            "scout": 0
-        }
-    },
-    "pos": {
-        "x": 45,
-        "y": 32,
-        "roomName": "E58S41"
-    },
-    "id": "57c409c9fea33e6c4c346ef4",
-    "store": {
-        "energy": 2000
-    },
-    "storeCapacity": 2000,
-    "hits": 245000,
-    "hitsMax": 250000,
-    "structureType": "container"
-}]
 
 // 分配存储罐(storage)
 Creep.prototype.AllocateStorage = function(MinStorage, MinContainer) {
@@ -137,7 +106,10 @@ Creep.prototype.AllocateSource = function(allocateId) {
         sourceId = allocateId;
         console.log("Direct allocate source[" + allocateId + "] to " + this.name);
     } else {
-        sourceId = this.FindClosestSource().id;
+        var source = this.FindClosestSource();
+        if (source) {
+            sourceId = source.id;
+        }
     }
 
     if (sourceId) {        

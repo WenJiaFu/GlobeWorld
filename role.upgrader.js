@@ -30,8 +30,8 @@ var roleUpgrader = {
             if (creep.upgradeController(target) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(creep.room.controller, {reusePath: 50});
             }
-        } else {
-            var source = creep.GetAllocatedObject();
+        } else {            
+            var source = creep.GetAllocatedObject();            
             if (source && (source.structureType == STRUCTURE_STORAGE || source.structureType == STRUCTURE_CONTAINER)) {                
                 if (creep.withdraw(source, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                     creep.moveTo(source, {reusePath:50});

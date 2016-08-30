@@ -20,7 +20,11 @@ var Defense = function(creep) {
     if (!creep.memory.enemy) {
         let enemies = creep.room.find(FIND_HOSTILE_CREEPS);
         let enemy = creep.pos.findClosestByRange(enemies);
-        creep.memory.enemy = {id: enemy.id};
+        if (enemy) {
+            creep.memory.enemy = {
+                id: enemy.id
+            };
+        }
     }
 
     if (creep.memory.enemy) {

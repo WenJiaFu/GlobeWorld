@@ -1,3 +1,5 @@
+var roomConstruction = require('room.construction');
+
 // 工路(Road)对象声明
 function RoadRepairObj(hits, pos) {
     this.hits = hits;
@@ -111,6 +113,13 @@ Room.prototype.ReAllocate = function() {
         this.memory.Sources[id].needAssigned = true;
         console.log("Room source[" + id + "] ReAllocate.");
     }    
+}
+
+// **
+// 房间内是否有损坏的设施
+// **
+Room.prototype.ExistImpairedSite = function() {
+    return this.memory.LossySites ? _.size(this.memory.LossySites) > 0 : false;
 }
 
 // **
@@ -233,8 +242,9 @@ Room.prototype.AutoExtension = function(CenterPos, ExtensionNum) {
                     if (createRoad) {
                         this.createConstructionSite(CurrentCheckPoint.x, CurrentCheckPoint.y, STRUCTURE_ROAD);
                     } else {
-                        this.createConstructionSite(CurrentCheckPoint.x, CurrentCheckPoint.y, STRUCTURE_EXTENSION);
-                        ExtensionNum--;
+                        if (this.createConstructionSite(CurrentCheckPoint.x, CurrentCheckPoint.y, STRUCTURE_EXTENSION) == OK) {
+                            ExtensionNum--;
+                        }
                     }
 
                     if (ExtensionNum == 0) {
@@ -258,36 +268,8 @@ Room.prototype.AutoExtension = function(CenterPos, ExtensionNum) {
 // **
 // 房间测试函数
 // **
-Room.prototype.Test = function () {
-
-    // EXTENSION
-    var extensions = this.find(FIND_STRUCTURES, {
-        filter: (structure) => {
-            return structure.structureType == STRUCTURE_EXTENSION;
-        }
-    });
-
-    for (var name in extensions){
-        console.log(extensions[name]);
-    }
-
-    // CONTAINER
-    var containers = this.find(FIND_STRUCTURES, {
-        filter: (structure) => {
-            return structure.structureType == STRUCTURE_CONTAINER;
-        }
-    });
-
-    for (var name in containers){
-        console.log(containers[name]);
-    }
-
-    // combined
-    var combined = extensions.concat(containers);
-    console.log("--------------------");
-    for (var name in combined){
-        console.log(combined[name]);
-    }
+Room.prototype.Upgrader = function () {
+    roomConstruction.OnControllerUpgrade(this);
 }
 
 var roomPrototype = {

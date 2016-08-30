@@ -4,7 +4,8 @@
 
 var State = {
     Harvester: "harvester",
-    Building: "building"
+    Building: "building",
+    Repair: "repair"
 };
 
 // 找到需要维修的工路
@@ -36,6 +37,62 @@ var MoveToRoom = function(creep, ToRoomName) {
     }
 }
 
+var DoHarvester = function(creep) {
+    var source = creep.GetAllocatedObject();
+    if (source && (source.structureType == STRUCTURE_STORAGE || source.structureType == STRUCTURE_CONTAINER)) {
+        //console.log("builder withdraw:" + source.structureType);
+        if (creep.withdraw(source, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+            creep.moveTo(source);
+        }
+    } else {
+        if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
+            creep.moveTo(source);
+        }
+    }
+}
+
+var DoBuild = function(creep) {
+    var room = Game.rooms[creep.room.name];
+    var targets = room.find(FIND_CONSTRUCTION_SITES);
+    if (targets.length) {
+        // 不在一个房间                
+        if (creep.memory.workRoom != creep.room.name) {
+            MoveToRoom(creep, creep.memory.workRoom);
+        } else {
+            var nearestSite = creep.pos.findClosestByRange(targets);
+            var ret = creep.build(nearestSite);
+            if (ret == ERR_NOT_IN_RANGE) {
+                creep.moveTo(nearestSite);
+            }
+        }
+    }
+}
+
+var DoRepair = function(creep) {
+    var RepairRoad = FindImpairedRoad(creep.room);
+    if (RepairRoad) {
+        creep.say('repairing');
+        if (creep.repair(RepairRoad) != 0) {
+            creep.moveTo(RepairRoad);
+        }
+    } else {
+        creep.say('store');
+        var store = creep.FindStorableForStore();
+        if (store) {
+            if (creep.transfer(store, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(store);
+            }
+        } else {
+            var target = creep.room.controller;
+            if (creep.upgradeController(target) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(creep.room.controller, {
+                    reusePath: 50
+                });
+            }
+        }
+    }
+}
+
 var roleBuilder = {
 
     /** @param {Creep} creep **/
@@ -45,69 +102,26 @@ var roleBuilder = {
             if (creep.AllocateStorage(0, creep.carryCapacity) || creep.AllocateSource()){
                 creep.memory.state = State.Harvester;
                 creep.say('harvesting');
-            }            
-	    }
-	    if(creep.memory.state == State.Harvester && creep.carry.energy == creep.carryCapacity) {
+            }
+	    } else if(creep.memory.state == State.Harvester && creep.carry.energy == creep.carryCapacity) {
             if (creep.UnAllocateSource()){
-                creep.memory.state = State.Building;
-                creep.say('building');
+                if (creep.room.ExistImpairedSite()){
+                    creep.memory.state = State.Repair;
+                    creep.say('repair');
+                } else {
+                    creep.memory.state = State.Building;
+                    creep.say('building');
+                }
             }
 	    }
 
-        // 优先级 build(修造) > repair(修复)
+        // 状态执行
         if (creep.memory.state == State.Building) {
-            var targets = undefined;
-            var room = Game.rooms[creep.room.name];
-            targets = room.find(FIND_CONSTRUCTION_SITES);
-            if (targets.length) {
-                creep.say('building');
-
-                // 不在一个房间                
-                if (creep.memory.workRoom != creep.room.name) {                    
-                    MoveToRoom(creep, creep.memory.workRoom);
-                } else {                    
-                    var nearestSite = creep.pos.findClosestByRange(targets);
-                    var ret = creep.build(nearestSite);                    
-                    if (ret == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(nearestSite);
-                    }
-                }
-            } else {
-                var RepairRoad = FindImpairedRoad(creep.room);
-                if (RepairRoad) {
-                    creep.say('repairing');
-                    if (creep.repair(RepairRoad) != 0) {
-                        creep.moveTo(RepairRoad);
-                    }
-                } else {
-                    creep.say('store');
-                    var store = creep.FindStorableForStore();
-                    if (store) {
-                        if (creep.transfer(store, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                            creep.moveTo(store);
-                        }
-                    } else {
-                        var target = creep.room.controller;
-                        if (creep.upgradeController(target) == ERR_NOT_IN_RANGE) {
-                            creep.moveTo(creep.room.controller, {
-                                reusePath: 50
-                            });
-                        }
-                    }
-                }
-            }
-        } else {
-            var source = creep.GetAllocatedObject();
-            if (source && (source.structureType == STRUCTURE_STORAGE || source.structureType == STRUCTURE_CONTAINER)) {
-                //console.log("builder withdraw:" + source.structureType);
-                if (creep.withdraw(source, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(source);
-                }
-            } else {
-                if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(source);
-                }
-            }
+            DoBuild(creep);
+        } else if (creep.memory.state == State.Repair) {
+            DoRepair(creep);
+        } else if (creep.memory.state == State.Harvester) {
+            DoHarvester(creep);
         }
 	}
 };
