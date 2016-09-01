@@ -1,12 +1,5 @@
 var roomConstruction = require('room.construction');
 
-// 工路(Road)对象声明
-function RoadRepairObj(hits, pos) {
-    this.hits = hits;
-    this.pos = pos;
-    this.needRepair = true;
-}
-
 var STEP_TOP = {x:0, y:-1};
 var STEP_TOP_RIGHT = {x:1, y:-1};
 var STEP_RIGHT = {x:1, y:0};
@@ -116,10 +109,17 @@ Room.prototype.ReAllocate = function() {
 }
 
 // **
-// 房间内是否有损坏的设施
+// 房间内是否有损坏的设施(公路、集装箱)
 // **
 Room.prototype.ExistImpairedSite = function() {
     return this.memory.LossySites ? _.size(this.memory.LossySites) > 0 : false;
+}
+
+// **
+// 房间是否需要建筑防御(墙、关卡)
+// **
+Room.prototype.ExistImpairedDefense = function() {
+    return this.memory.defenseSites ? _.size(this.memory.defenseSites) > 0 : false;
 }
 
 // **

@@ -1,6 +1,6 @@
-// 游戏全局配置
+// 游戏相关
+var gameConsole = require('game.console');
 var gameConfig = require('game.config');
-// 游戏状态
 var gameState = require('game.state');
 // 原型加载
 var roomPrototype = require('room.prototype');
@@ -14,6 +14,14 @@ var roomSchedule = require('room.schedule');
 // 内存清理
 var memoryCleanup = require('memory.cleanup');
 
+// var global.TestLog = function (){
+//     console.log("Testlog");
+// }
+
+global.TestLog = function() {
+    console.log("Testlog");
+}
+
 module.exports.loop = function () 
 {   
     //var BeginCPU = Game.cpu.getUsed();
@@ -21,7 +29,7 @@ module.exports.loop = function ()
     //console.log("begin ameConfig.refresh cost:" + (Game.cpu.getUsed() - BeginCPU));
 
     // 游戏配置
-    gameConfig.refresh();
+    gameConfig.init();
 
     // 游戏状态
     gameState.init();

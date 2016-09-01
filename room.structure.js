@@ -1,6 +1,18 @@
 var towerNormal = require('tower.normal');
 var roomConstruction = require('room.construction');
 
+var CONTROLLER_DEFENSE_REPAIRE = {
+	0: 0,
+	1: 0,
+	2: 0,
+	3: 200000, //200K
+	4: 200000,
+	5: 200000,
+	6: 200000,
+	7: 200000,
+	8: 200000
+};
+
 function ControllerObj() {	
 	this.level = 0;
 	this.pathReached = false;
@@ -16,9 +28,10 @@ function SourceObj(pos) {
 	this.pathReached = false;
 }
 
-// 工路(Road)对象声明
-function RoadRepairObj(hits, pos) {
+// 可维修对象声明
+function RepairableOjb(hits, hitsMax, pos) {
     this.hits = hits;
+    this.hitsMax = hitsMax;
     this.pos = pos;
     this.needRepair = true;
 }
@@ -206,10 +219,12 @@ var UpdateContainer = function(container) {
 }
 
 var UpdateController = function(room) {
-	if (room.memory.controller.level < room.controller.level) {
-		roomConstruction.OnControllerUpgrade(room);
+	if (room.controller && room.controller.my) {
+		if (room.memory.controller.level < room.controller.level) {
+			roomConstruction.OnControllerUpgrade(room);
+		}
+		room.memory.controller.level = room.controller.level;
 	}
-	room.memory.controller.level = room.controller.level;
 }
 
 // 运转传送器
@@ -237,40 +252,73 @@ var RunningTower = function(room) {
 	}    
 }
 
+var ProcessConstructionMemory = function(room, structure) {    
+	var id = structure.id;
+	var needRepair = structure.hits < structure.hitsMax / 3;
+	var repairOK = structure.hits == structure.hitsMax;
+
+	if (needRepair && !room.memory.LossySites[id]) {
+		room.memory.LossySites[id] = new RepairableOjb(structure.hits, structure.hitsMax, structure.pos);
+		//console.log(structure.structureType + "[" + structure.pos.x + "," + structure.pos.y + "] need repair");
+	} else if (repairOK && room.memory.LossySites[id]) {
+		delete room.memory.LossySites[id];
+		//console.log(structure.structureType + "[" + structure.pos.x + "," + structure.pos.y + "] repair completed. Remove from the memory");
+	}
+}
+
+var ProcessDefenseMemory = function(room, structure) {
+	if (structure.hits == structure.hitsMax) {
+		return ;
+	}
+
+	var repairHits = CONTROLLER_DEFENSE_REPAIRE[room.controller.level];	
+	var id = structure.id;
+	var needRepair = structure.hits < (repairHits * 0.8);
+	var repairOK = (structure.hits > repairHits || structure.hits == structure.hitsMax);
+
+	if (needRepair && !room.memory.defenseSites[id]) {
+		room.memory.defenseSites[id] = new RepairableOjb(structure.hits, structure.hitsMax, structure.pos);
+		//console.log(structure.structureType + "[" + structure.pos.x + "," + structure.pos.y + "] need repair");
+	} else if (repairOK && room.memory.defenseSites[id]) {
+		delete room.memory.defenseSites[id];
+		//console.log(structure.structureType + "[" + structure.pos.x + "," + structure.pos.y + "] repair completed. Remove from the memory");
+	}
+}
+
 // 房间设施维护
 var MaintainSite = function(room) {
     
     // var BeginCPU =Game.cpu.getUsed();
     
-    // 有损耗的设施
-    var LossySites = room.find(FIND_STRUCTURES, {
+    // 需要维修的设施
+    var RepairableSites = room.find(FIND_STRUCTURES, {
         filter: (structure) => {
             return (structure.structureType == STRUCTURE_ROAD ||
                 structure.structureType == STRUCTURE_CONTAINER || 
-                structure.structureType == STRUCTURE_RAMPART)
+                structure.structureType == STRUCTURE_RAMPART || 
+                structure.structureType == STRUCTURE_WALL)
         }
     });
 
+    // 建筑设施
     if (!room.memory.LossySites) {
         room.memory.LossySites = new Object();        
         console.log("wrote [" + room.name + "] room.memory.LossySites");
     }
-    
-    // 检测是否设施需要维修
-    for (var name in LossySites) {
-        var id = LossySites[name].id;
-        var needRepair = LossySites[name].hits < LossySites[name].hitsMax / 3;
-        var repairOK = LossySites[name].hits == LossySites[name].hitsMax;
-        
-        if (needRepair && !room.memory.LossySites[id]) {
-            room.memory.LossySites[id] = new RoadRepairObj(LossySites[name].hits, LossySites[name].pos);
-            //console.log(LossySites[name].structureType + "[" + LossySites[name].pos.x + "," + LossySites[name].pos.y + "] need repair");
-        }
-        else if (repairOK && room.memory.LossySites[id]) {
-            delete room.memory.LossySites[id];
-            //console.log(LossySites[name].structureType + "[" + LossySites[name].pos.x + "," + LossySites[name].pos.y + "] repair completed. Remove from the memory");
-        }
+
+    // 防御设施
+    if (!room.memory.defenseSites) {
+        room.memory.defenseSites = new Object();        
+        console.log("wrote [" + room.name + "] room.memory.defenseSites");
     }
+    
+	_.forEach(RepairableSites, function(structure) {
+		if (structure.structureType == STRUCTURE_ROAD || structure.structureType == STRUCTURE_CONTAINER) {
+			ProcessConstructionMemory(room, structure);
+		} else if (structure.structureType == STRUCTURE_RAMPART || structure.structureType == STRUCTURE_WALL) {
+			ProcessDefenseMemory(room, structure);
+		}
+	});
     
     // var CostCPU = Game.cpu.getUsed() - BeginCPU;
     // console.log("CostCPU:" + CostCPU);

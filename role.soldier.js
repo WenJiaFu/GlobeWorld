@@ -3,22 +3,30 @@
 
 var State = {
     Defense: "defense",
-    Attack: "attack"
+    Attack: "attack",
+    MoveTo: "moveTo"
 };
 
-// var MoveToRoom = function(creep) {
-//     var AttackRoomName = creep.memory.AttackRoom;
-//     var route = Game.map.findRoute(creep.room, AttackRoomName);
-//     if (route.length > 0) {
-//         //console.log('Now heading to room ' + route[0].room);
-//         var exit = creep.pos.findClosestByRange(route[0].exit);
-//         creep.moveTo(exit);
-//     }
-// }
+var MoveToRoom = function(creep, room) {
+    if (!creep.memory.moveTo) {
+        creep.memory.moveTo = room;
+    }
+
+    if (creep.room.name != creep.memory.moveTo) {
+        var route = Game.map.findRoute(creep.room, creep.memory.moveTo);
+        if (route.length > 0) {            
+            var exit = creep.pos.findClosestByRange(route[0].exit);
+            //console.log('moveTo exit :' + exit);
+            creep.moveTo(exit);
+            //creep.moveTo(new RoomPosition(0, 30, 'W30N26'));
+        }
+    }
+}
 
 var Defense = function(creep) {    
     if (!creep.memory.enemy) {
-        let enemies = creep.room.find(FIND_HOSTILE_CREEPS);
+        //let enemies = creep.room.find(FIND_HOSTILE_CREEPS);
+        let enemies = creep.room.find(FIND_HOSTILE_STRUCTURES);        
         let enemy = creep.pos.findClosestByRange(enemies);
         if (enemy) {
             creep.memory.enemy = {
@@ -34,30 +42,26 @@ var Defense = function(creep) {
             delete creep.memory.enemy;
             return ;
         }        
-        
-        // "owner": {
-        //     "username": "Source Keeper"
-        // }
 
-        // var jsonStr = JSON.stringify(enemy);
-        // console.log(jsonStr);
         var beginCPU = Game.cpu.getUsed();
 
         if (creep.attack(enemy) == ERR_NOT_IN_RANGE) {
             creep.moveTo(enemy);
         }
-
-        //console.log("Cost CPU:" + (Game.cpu.getUsed() - beginCPU));
     }
 }
 
-var Attack = function(creep) {    
-    // var Target = creep.room.controller;
-    // var ret = creep.attackController(Target);
-    // console.log("attack ret:" + ret);
-    // if (creep.attackController(Target) == ERR_NOT_IN_RANGE) {
-    //     creep.moveTo(Target);
-    // }
+var Attack = function(creep) {
+    let AttackRoom = Memory.gameConfig.attackRoom;    
+
+    // 移到目标房间
+    //console.log(`${creep.memory.moveTo} != ${creep.room.name}`)
+    if (creep.memory.moveTo != creep.room.name) {
+        MoveToRoom(creep, AttackRoom);
+    } else {
+        //console.log("defnese");
+        Defense(creep);
+    }
 }
 
 // // 找到被标记为攻击目标的房间
@@ -84,6 +88,10 @@ var roleSoldier = {
 
             case State.Attack:
                 Attack(creep);
+                break;
+
+            case State.MoveTo:
+                MoveToRoom(creep);
                 break;
 
             default:

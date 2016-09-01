@@ -33,7 +33,7 @@ var AutoConstruct = function(room) {
     }
 
     // construct road from [Spawn] to [Controller]    
-    if (room.controller.my && (room.memory.controller && !room.memory.controller.pathReached)) {
+    if (room.controller && room.controller.my && (room.memory.controller && !room.memory.controller.pathReached)) {
         var spawn = room.find(FIND_STRUCTURES, {
             filter: (structure) => {
                 return (structure.structureType == STRUCTURE_SPAWN && structure.my && !structure.spawning);
@@ -50,7 +50,7 @@ var AutoConstruct = function(room) {
 var EventControllerUpgrade = function(room) {
     console.log(`Event: Room[${room.name}] controller upgrade to ${room.controller.level}`);
 
-    if (room.controller.level <= 3) {
+    if (room.controller.level <= 4) {
         for (var name in Game.spawns) {
             if (Game.spawns[name].room.name == room.name) {
                 var ExtensionNum = CONTROLLER_STRUCTURES[STRUCTURE_EXTENSION][room.controller.level];

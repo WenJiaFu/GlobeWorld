@@ -8,7 +8,7 @@ var State = {
 };
 
 var MoveToRoom = function(creep, ToRoom) {
-    console.log("MoveToRoom(" + creep.room.name + "," + ToRoom + ")");
+    //console.log("MoveToRoom(" + creep.room.name + "," + ToRoom + ")");
     var route = Game.map.findRoute(creep.room.name, ToRoom);
     if (route.length > 0) {
         //console.log('Now heading to room ' + route[0].room);
@@ -18,10 +18,8 @@ var MoveToRoom = function(creep, ToRoom) {
 }
 
 var Explore = function(creep) {
-    creep.say("explore");
-
-    var TargetRoom = Memory.gameConfig.wantColony;
-    MoveToRoom(creep, TargetRoom);
+    creep.say("explore");    
+    MoveToRoom(creep, creep.memory.workRoom);
 
     // var exits = Game.map.describeExits(creep.room.name);
     // var TopRoom = exits[FIND_EXIT_TOP];
@@ -33,11 +31,8 @@ var Explore = function(creep) {
 }
 
 var Claim = function(creep) {
-    creep.say("claim");
-    
-    var ret = creep.claimController(creep.room.controller);
-    //var ret = creep.reserveController(creep.room.controller);
-    console.log("reserveController:" + ret);
+    creep.say("claim");    
+    var ret = creep.claimController(creep.room.controller);    
     if (ret == ERR_NOT_IN_RANGE) {
         creep.moveTo(creep.room.controller);
     }
@@ -48,8 +43,7 @@ var rolePioneer = {
     /** @param {Creep} creep **/
     run: function(creep) {
 
-        var IsMyController = creep.room.controller.my;
-        if (IsMyController) {
+        if (creep.room.name != creep.memory.workRoom) {
             creep.memory.state = State.Explore;
         } else {
             creep.memory.state = State.Claim;

@@ -187,7 +187,7 @@ var KeeperBuilder = function(room) {
 	if (_.size(room.memory.LossySites) > 0) {
 		RequireTotal = 1;
 	}
-	if (room.memory.construction > 0) {
+	if (room.memory.construction > 0 || _.size(room.memory.defenseSites)) {
 		RequireTotal = 3;
 	}
 
@@ -250,22 +250,37 @@ var KeeperCollect = function(room) {
 var KeeperPioneer = function(room) {
 	// 需求计算
 	var RequireTotal = 0;
-	if (Memory.gameState.needPioneer) {		
-		RequireTotal = 1;
-		Memory.gameState.needPioneer = false;
-	}
-	room.memory.CreepRequire.pioneer.RequireTotal = RequireTotal;
 
 	// 提交队列
-	if (room.energyCapacityAvailable > BodyElement.CLAIM.Cost) {
-		var InSpawnQueue = room.memory.CreepRequire.pioneer.InSpawnQueue;
-		var pioneerNum = room.memory.CreepState.pioneer;
-		var SpawnRequire = RequireTotal - (pioneerNum + InSpawnQueue);
-		for (var i = 0; i < SpawnRequire; i++) {
+	if (Memory.gameConfig.claimRoom.length) {
+		if (room.energyCapacityAvailable > BodyElement.CLAIM.Cost) {
 			var bodys = BuildBody(1, BodyElement.CLAIM.Body);
-			factorySpawn.request(room, "pioneer", bodys, "explore", room.name);
+			var workRoom = Memory.gameConfig.claimRoom;
+			factorySpawn.request(room, "pioneer", bodys, "explore", workRoom);			
+		} else {
+			console.log("Request claim creep failed. Has not enough energy.");
 		}
+
+		Memory.gameConfig.claimRoom = "";
 	}
+	
+
+	// if (Memory.gameConfig.claimRoom.length()) {		
+	// 	// RequireTotal = 1;
+	// 	// Memory.gameState.needPioneer = false;
+	// }
+	// room.memory.CreepRequire.pioneer.RequireTotal = RequireTotal;
+
+	// // 提交队列
+	// if (room.energyCapacityAvailable > BodyElement.CLAIM.Cost) {
+	// 	var InSpawnQueue = room.memory.CreepRequire.pioneer.InSpawnQueue;
+	// 	var pioneerNum = room.memory.CreepState.pioneer;
+	// 	var SpawnRequire = RequireTotal - (pioneerNum + InSpawnQueue);
+	// 	for (var i = 0; i < SpawnRequire; i++) {
+	// 		var bodys = BuildBody(1, BodyElement.CLAIM.Body);
+	// 		factorySpawn.request(room, "pioneer", bodys, "explore", room.name);
+	// 	}
+	// }
 }
 
 var KeeperSoldier = function(room) {

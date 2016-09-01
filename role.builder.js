@@ -5,11 +5,23 @@
 var State = {
     Harvester: "harvester",
     Building: "building",
-    Repair: "repair"
+    Repair: "repair",
+    Defense: "defense",
+    MoveTo: "moveTo"
 };
 
-// 找到需要维修的工路
-var FindImpairedRoad = function(Room) {
+var MoveToRoom = function(creep, ToRoom) {
+    //console.log("MoveToRoom(" + creep.room.name + "," + ToRoom + ")");
+    var route = Game.map.findRoute(creep.room.name, ToRoom);
+    if (route.length > 0) {
+        //console.log('Now heading to room ' + route[0].room);
+        var exit = creep.pos.findClosestByRange(route[0].exit);
+        creep.moveTo(exit);
+    }
+}
+
+// 找到需要维修的建筑
+var FindImpairedSite = function(Room) {
     var LossySites = Room.memory.LossySites;
     
     if (LossySites){ 
@@ -23,6 +35,25 @@ var FindImpairedRoad = function(Room) {
             }
 
             return ImpairedRoad;
+        }
+    }
+}
+
+// 找到需要维修的防御
+var FindImpairedDefense = function(Room) {
+    var defenseSites = Room.memory.defenseSites;
+    
+    if (defenseSites){ 
+        for (var id in defenseSites) {            
+            var ImpairedDefense = Game.getObjectById(id);
+
+            // 已不存在，从内存中清除
+            if (!ImpairedDefense){
+                delete Room.memory.defenseSites[id];
+                continue;
+            }
+
+            return ImpairedDefense;
         }
     }
 }
@@ -51,6 +82,32 @@ var DoHarvester = function(creep) {
     }
 }
 
+var DoDefense = function(creep) {
+    var defenseSite = FindImpairedDefense(creep.room);
+    //console.log("defenseSites:" + _.size(defenseSites));
+    if (defenseSite) {
+        creep.say('repairing');
+        if (creep.repair(defenseSite) != 0) {
+            creep.moveTo(defenseSite);
+        }
+    } else {
+        creep.say('store');
+        var store = creep.FindStorableForStore();
+        if (store) {
+            if (creep.transfer(store, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(store);
+            }
+        } else {
+            var target = creep.room.controller;
+            if (creep.upgradeController(target) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(creep.room.controller, {
+                    reusePath: 50
+                });
+            }
+        }
+    }
+}
+
 var DoBuild = function(creep) {
     var room = Game.rooms[creep.room.name];
     var targets = room.find(FIND_CONSTRUCTION_SITES);
@@ -65,11 +122,14 @@ var DoBuild = function(creep) {
                 creep.moveTo(nearestSite);
             }
         }
+        return true;
+    } else {
+        return false;
     }
 }
 
 var DoRepair = function(creep) {
-    var RepairRoad = FindImpairedRoad(creep.room);
+    var RepairRoad = FindImpairedSite(creep.room);
     if (RepairRoad) {
         creep.say('repairing');
         if (creep.repair(RepairRoad) != 0) {
@@ -93,36 +153,54 @@ var DoRepair = function(creep) {
     }
 }
 
+var determineWork = function(creep) {
+    if (creep.room.name != creep.memory.workRoom){
+        creep.memory.state = State.MoveTo;
+        creep.say('moveTo');
+    } else if (creep.room.ExistImpairedSite()) {
+        creep.memory.state = State.Repair;
+        creep.say('repair');
+    } else if (creep.room.memory.construction > 0) {
+        creep.memory.state = State.Building;
+        creep.say('building');
+    } else if (creep.room.ExistImpairedDefense()) {
+        creep.memory.state = State.Defense;
+        creep.say('defense');
+    }
+}
+
 var roleBuilder = {
 
     /** @param {Creep} creep **/
     run: function(creep) {
 
-	    if(creep.memory.state == State.Building && creep.carry.energy == 0) {
+	    if((creep.memory.state == State.Building || creep.memory.state == State.Defense) && creep.carry.energy == 0) {
             if (creep.AllocateStorage(0, creep.carryCapacity) || creep.AllocateSource()){
                 creep.memory.state = State.Harvester;
                 creep.say('harvesting');
             }
 	    } else if(creep.memory.state == State.Harvester && creep.carry.energy == creep.carryCapacity) {
+            //console.log(creep.name + " un allocate");
             if (creep.UnAllocateSource()){
-                if (creep.room.ExistImpairedSite()){
-                    creep.memory.state = State.Repair;
-                    creep.say('repair');
-                } else {
-                    creep.memory.state = State.Building;
-                    creep.say('building');
-                }
+                determineWork(creep);
             }
 	    }
 
         // 状态执行
         if (creep.memory.state == State.Building) {
-            DoBuild(creep);
+            if (!DoBuild(creep)){
+                determineWork(creep);
+                //console.log("re determineWork");
+            }
         } else if (creep.memory.state == State.Repair) {
             DoRepair(creep);
         } else if (creep.memory.state == State.Harvester) {
             DoHarvester(creep);
-        }
+        } else if (creep.memory.state == State.Defense) {
+            DoDefense(creep);
+        } else if (creep.memory.state == State.MoveTo) {
+            MoveToRoom(creep, creep.memory.workRoom);
+        }        
 	}
 };
 
