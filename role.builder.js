@@ -11,13 +11,20 @@ var State = {
 };
 
 var MoveToRoom = function(creep, ToRoom) {
-    //console.log("MoveToRoom(" + creep.room.name + "," + ToRoom + ")");
+    console.log("MoveToRoom(" + creep.room.name + "," + ToRoom + ")");
     var route = Game.map.findRoute(creep.room.name, ToRoom);
     if (route.length > 0) {
         //console.log('Now heading to room ' + route[0].room);
         var exit = creep.pos.findClosestByRange(route[0].exit);
         creep.moveTo(exit);
+        return false;
+    } else {
+        console.log("reach the room[" + ToRoom + "]");
     }
+
+    console.log("MoveToRoom End");
+
+    return true;
 }
 
 // 找到需要维修的建筑
@@ -174,7 +181,7 @@ var roleBuilder = {
     /** @param {Creep} creep **/
     run: function(creep) {
 
-	    if((creep.memory.state == State.Building || creep.memory.state == State.Defense) && creep.carry.energy == 0) {
+	    if((creep.memory.state == State.Building || creep.memory.state == State.Defense || creep.memory.state == State.Repair) && creep.carry.energy == 0) {
             if (creep.AllocateStorage(0, creep.carryCapacity) || creep.AllocateSource()){
                 creep.memory.state = State.Harvester;
                 creep.say('harvesting');
@@ -184,7 +191,9 @@ var roleBuilder = {
             if (creep.UnAllocateSource()){
                 determineWork(creep);
             }
-	    }
+	    } else if(creep.memory.state == State.MoveTo && creep.room.name == creep.memory.workRoom) {
+            determineWork(creep);
+        }
 
         // 状态执行
         if (creep.memory.state == State.Building) {

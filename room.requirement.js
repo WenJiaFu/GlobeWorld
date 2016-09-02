@@ -161,7 +161,7 @@ var KeeperHarvester = function(room) {
 
 var KeeperUpgrader = function(room) {
 	// 需求计算
-	var RequireTotal = _.min([3, room.controller.level]);	
+	var RequireTotal = _.min([2, room.controller.level]);	
 	if (room.memory.EnergyState) {
 		let capacityRate = (room.memory.EnergyState.energy / room.memory.EnergyState.energyCapacity);
 		if (room.controller.level <= 2 && capacityRate > 0.8) {
@@ -175,7 +175,7 @@ var KeeperUpgrader = function(room) {
 	var UpgraderNum = room.memory.CreepState.upgrader;
 	var SpawnRequire = RequireTotal - (UpgraderNum + InSpawnQueue);
 	for (var i=0; i < SpawnRequire; i++) {
-		var bodyGroupNum = _.floor(room.energyCapacityAvailable / BodyElement.WORK.Cost);		
+		var bodyGroupNum = _.min([3, _.floor(room.energyCapacityAvailable / BodyElement.WORK.Cost)]);
 		var bodys = BuildBody(bodyGroupNum, BodyElement.WORK.Body);
 		factorySpawn.request(room, "upgrader", bodys, "upgrade", room.name);
 	}
@@ -198,7 +198,7 @@ var KeeperBuilder = function(room) {
 	var builderNum = room.memory.CreepState.builder;
 	var SpawnRequire = RequireTotal - (builderNum + InSpawnQueue);
 	for (var i=0; i < SpawnRequire; i++) {
-		var bodyGroupNum = _.floor(room.energyCapacityAvailable / BodyElement.WORK.Cost);		
+		var bodyGroupNum = _.min([5, _.floor(room.energyCapacityAvailable / BodyElement.WORK.Cost)]);
 		var bodys = BuildBody(bodyGroupNum, BodyElement.WORK.Body);
 		factorySpawn.request(room, "builder", bodys, "building", room.name);
 	}
@@ -218,7 +218,7 @@ var KeeperStevedore = function(room) {
 	var stevedoreNum = room.memory.CreepState.stevedore;
 	var SpawnRequire = RequireTotal - (stevedoreNum + InSpawnQueue);
 	for (var i=0; i < SpawnRequire; i++) {
-		var bodyGroupNum = _.floor(room.energyCapacityAvailable / BodyElement.WORK.Cost);;
+		var bodyGroupNum = _.min([4, _.floor(room.energyCapacityAvailable / BodyElement.WORK.Cost)]);
 		var bodys = BuildBody(bodyGroupNum, BodyElement.CARRY.Body);
 		factorySpawn.request(room, "stevedore", bodys, "distribute", room.name);
 	}
