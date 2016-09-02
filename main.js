@@ -14,12 +14,19 @@ var roomSchedule = require('room.schedule');
 // 内存清理
 var memoryCleanup = require('memory.cleanup');
 
-// var global.TestLog = function (){
-//     console.log("Testlog");
-// }
+global.FindExit = function() {
 
-global.TestLog = function() {
-    console.log("Testlog");
+    var exitDir = Game.rooms.W32N28.findExitTo("W32N27");
+    var exits = Game.spawns['Spawn1'].pos.findClosestByPath(exitDir);
+    console.log(exits);
+
+    // var route = Game.map.findRoute(creep.room.name, "W32N27");
+    // if (route.length > 0) {
+    //     //console.log('Now heading to room ' + route[0].room);
+    //     var exit = creep.pos.findClosestByRange(route[0].exit);
+    //     creep.moveTo(exit);
+    //     return false;
+    // }
 }
 
 module.exports.loop = function () 

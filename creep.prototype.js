@@ -164,12 +164,16 @@ Creep.prototype.FindStorableForRecycle = function(){
     });
 
     // Step2: STORAGE
-    if (storages.length == 0) {
-        storages = this.room.storage;
+    //console.log("length:" + storages.length);
+    if (storages.length > 0) {
+        target = this.pos.findClosestByRange(storages);
+    } else {
+        target = this.room.storage;
     }
 
     // 从可存储设施列表中选出最近的目标
-    target = this.pos.findClosestByRange(storages);
+    
+    //console.log("target:" + target);
     return target;
 }
 

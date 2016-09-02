@@ -175,7 +175,7 @@ var KeeperUpgrader = function(room) {
 	var UpgraderNum = room.memory.CreepState.upgrader;
 	var SpawnRequire = RequireTotal - (UpgraderNum + InSpawnQueue);
 	for (var i=0; i < SpawnRequire; i++) {
-		var bodyGroupNum = _.min([3, _.floor(room.energyCapacityAvailable / BodyElement.WORK.Cost)]);
+		var bodyGroupNum = _.min([4, _.floor(room.energyCapacityAvailable / BodyElement.WORK.Cost)]);
 		var bodys = BuildBody(bodyGroupNum, BodyElement.WORK.Body);
 		factorySpawn.request(room, "upgrader", bodys, "upgrade", room.name);
 	}

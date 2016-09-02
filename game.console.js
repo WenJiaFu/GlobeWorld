@@ -34,11 +34,20 @@ global.MassRoom = function(roomName) {
 	return `MassRoom ${roomName}`;
 }
 
+// 远程采集房间
+global.ImportRoom = function(roomName) {
+	if (Memory.gameConfig) {
+		Memory.gameConfig.importRoom = roomName;
+	}
+
+	return `ImportRoom ${roomName}`;
+}
+
 // 采矿(harvester)
 // Game.spawns['Spawn1'].createCreep( [WORK,CARRY,MOVE], undefined, { role: 'harvester', workRoom: 'E16S41', state: 'init', preAllocate: '577b93a60f9d51615fa48792'});
 
 // 修造(builder)
-// Game.spawns['Spawn1'].createCreep( [WORK,CARRY,MOVE,WORK,CARRY,MOVE,WORK,CARRY,MOVE,WORK,CARRY,MOVE], undefined, { role: 'builder', workRoom: 'W32N26', state: 'harvester'});
+// Game.spawns['Spawn1'].createCreep( [WORK,CARRY,MOVE,WORK,CARRY,MOVE,WORK,CARRY,MOVE,WORK,CARRY,MOVE], undefined, { role: 'builder', workRoom: 'W32N26', state: 'building'});
 
 // 回收工人(collect)
 // Game.spawns['Spawn1'].createCreep( [CARRY,CARRY,MOVE], undefined, { role: 'collect', state: 'init'});
