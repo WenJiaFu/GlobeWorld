@@ -1,26 +1,62 @@
+var State = {    
+    Harvest: "harvest",
+    Store: "store"
+};
+
+var Harvest = function(creep) {
+    if (!creep.memory.mineral) {
+        var mineral = creep.room.find(FIND_MINERALS, {
+            filter: (mineral) => {
+                return mineral.mineralAmount > 0;
+            }
+        })[0];
+
+        if (mineral) {
+            creep.memory.mineral = mineral.id;
+        }
+    }
+
+    if (creep.memory.mineral) {
+        var mineral = Game.getObjectById(creep.memory.mineral);
+        if (creep.harvest(mineral) == ERR_NOT_IN_RANGE) {
+            creep.moveTo(mineral);
+        }
+    }
+}
+
+var Store = function(creep) {
+    var wantContainter = true;    
+    var store = creep.FindStorableForStore(wantContainter);
+    if (store) {
+        for (var type in creep.carry) {
+            if (creep.carry[type] > 0) {
+                var ret = creep.transfer(store, type);
+                if (ret == ERR_NOT_IN_RANGE) {
+                    creep.moveTo(store);
+                    break;
+                }
+            }
+        }
+    }
+}
+
 var roleMiner = {
 
     /** @param {Creep} creep **/
     run: function(creep) {
-	    if(creep.carry.energy < creep.carryCapacity) {
-            var sources = creep.room.find(FIND_MINERALS);
-            if(creep.harvest(sources[0]) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(sources[0]);
-            }
+        // 状态运行
+        if (creep.memory.state == State.Harvest && _.sum(creep.carry) == creep.carryCapacity) {
+            creep.memory.state = State.Store;
+        } else if (creep.memory.state == State.Store && _.sum(creep.carry) == 0) {
+            creep.memory.state = State.Harvest;
         }
-        else {
-            var targets = creep.room.find(FIND_STRUCTURES, {
-                    filter: (structure) => {
-                        return (structure.structureType == STRUCTURE_CONTAINER && structure.energy < structure.energyCapacity;
-                    }
-            });
-            if(targets.length > 0) {
-                if(creep.transfer(targets[0], RESOURCE_LEMERGIUM) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(targets[0]);
-                }
-            }
+
+        if (creep.memory.state == State.Harvest) {
+            Harvest(creep);
+        } else if (creep.memory.state == State.Store) {
+            Store(creep);
         }
 	}
 };
 
-module.exports = roleHMiner;
+module.exports = roleMiner;

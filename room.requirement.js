@@ -49,6 +49,7 @@ function CreepRequire() {
 	this.pioneer = new RequirementState();
 	this.soldier = new RequirementState();
 	this.scout = new RequirementState();
+	this.miner = new RequirementState();
 };
 
 // 计算Body消费
@@ -117,6 +118,7 @@ var RequirementRun = function(room) {
 		KeeperPioneer(room);
 		KeeperSoldier(room);
 		KeeperScout(room);
+		KeeperMiner(room);
 	}
 };
 
@@ -305,6 +307,28 @@ var KeeperSoldier = function(room) {
 
 var KeeperScout = function(room) {
 
+}
+
+var KeeperMiner = function(room) {
+	// 需求计算
+	var RequireTotal = 0;
+	if (room.storage) {
+		RequireTotal = 1;
+	}	
+
+	// 提交队列
+	if (room.memory.CreepRequire.miner) {
+		room.memory.CreepRequire.miner.RequireTotal = RequireTotal;
+		
+		var InSpawnQueue = room.memory.CreepRequire.miner.InSpawnQueue;
+		var minerNum = room.memory.CreepState.miner;
+		var SpawnRequire = RequireTotal - (minerNum + InSpawnQueue);
+		for (var i = 0; i < SpawnRequire; i++) {
+			var bodyGroupNum = _.min([4, _.floor(room.energyCapacityAvailable / BodyElement.WORK.Cost)]);
+			var bodys = BuildBody(bodyGroupNum, BodyElement.WORK.Body);
+			factorySpawn.request(room, "miner", bodys, "harvest", room.name);
+		}
+	}
 }
 
 var roomRequirement = {

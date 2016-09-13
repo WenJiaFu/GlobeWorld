@@ -8,6 +8,7 @@ var roleCollect = require('role.collect');
 var rolePioneer = require('role.pioneer');
 var roleSoldier = require('role.soldier');
 var roleScout = require('role.scout');
+var roleMiner = require('role.miner');
 
 var RunningCreep = function(creep) {
     for (var name in Game.creeps) {
@@ -33,6 +34,8 @@ var RunningCreep = function(creep) {
             roleSoldier.run(creep);
         } else if (creep.memory.role == 'scout') {
             roleScout.run(creep);
+        } else if (creep.memory.role == 'miner') {
+            roleMiner.run(creep);
         }
     }
 }

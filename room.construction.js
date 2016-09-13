@@ -44,6 +44,22 @@ var AutoConstruct = function(room) {
             room.PaveRoad(spawn.pos, room.controller.pos);
             room.memory.controller.pathReached = true;
         }
+    }    
+
+    // construct road from [Spawn] to [Extractor]
+    for (var id in room.memory.extractor) {
+        if (!room.memory.extractor[id].pathReached) {
+            var spawn = room.find(FIND_STRUCTURES, {
+                filter: (structure) => {
+                    return (structure.structureType == STRUCTURE_SPAWN && structure.my && !structure.spawning);
+                }
+            })[0];
+
+            if (spawn) {
+                room.PaveRoad(spawn.pos, Game.getObjectById(id).pos);
+                room.memory.extractor[id].pathReached = true;
+            }
+        }
     }
 }
 

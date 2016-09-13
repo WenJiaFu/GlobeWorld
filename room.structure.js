@@ -111,7 +111,8 @@ var UpdateStructure = function(room) {
 		filter: (structure) => {
 			return structure.structureType == STRUCTURE_LINK ||
 				structure.structureType == STRUCTURE_TOWER ||
-				structure.structureType == STRUCTURE_CONTAINER;
+				structure.structureType == STRUCTURE_CONTAINER ||
+				structure.structureType == STRUCTURE_EXTRACTOR;
 		}
 	});
 
@@ -125,6 +126,9 @@ var UpdateStructure = function(room) {
 				break;
 			case STRUCTURE_CONTAINER:
 				UpdateContainer(structures[obj]);
+				break;
+			case STRUCTURE_EXTRACTOR:
+				UpdateExtractor(structures[obj]);
 				break;
 			default:
 				console.log("no matched structure type update.");
@@ -216,6 +220,20 @@ var UpdateContainer = function(container) {
 	}
 
 	//console.log("container.store: " + container.store[RESOURCE_ENERGY]);
+}
+
+// 更新萃取器(Extractor)
+var UpdateExtractor = function(extractor) {
+	var id = extractor.id;
+
+	if (!extractor.room.memory.extractor) {
+		extractor.room.memory.extractor = new Object();
+		extractor.room.memory.extractor[id] = {pathReached: false};
+	}
+	
+	if (!Game.getObjectById(id)){
+		delete extractor.room.memory.extractor[id];
+	}
 }
 
 var UpdateController = function(room) {

@@ -18,6 +18,7 @@ function CreepState() {
     this.pioneer = 0;
     this.soldier = 0;
     this.scout = 0;
+    this.miner = 0;
 }
 
 // 房间Creep状态
@@ -44,6 +45,7 @@ var StatCreep = function(room) {
         room.memory.CreepState.pioneer = StatCreepType(room, "pioneer");
         room.memory.CreepState.soldier = StatCreepType(room, "soldier");
         room.memory.CreepState.scout = StatCreepType(room, "scout");
+        room.memory.CreepState.miner = StatCreepType(room, "miner");
     }
 }
 
