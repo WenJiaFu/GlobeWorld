@@ -243,7 +243,7 @@ var KeeperCollect = function(room) {
 	var collectNum = room.memory.CreepState.collect;
 	var SpawnRequire = RequireTotal - (collectNum + InSpawnQueue);
 	for (var i=0; i < SpawnRequire; i++) {
-		var bodyGroupNum = _.min([10, _.floor(room.energyCapacityAvailable / BodyElement.CARRY.Cost)]);
+		var bodyGroupNum = _.min([6, _.floor(room.energyCapacityAvailable / BodyElement.CARRY.Cost)]);
 		var bodys = BuildBody(bodyGroupNum, BodyElement.CARRY.Body);
 		factorySpawn.request(room, "collect", bodys, "recycle", room.name);
 	}
@@ -312,12 +312,12 @@ var KeeperScout = function(room) {
 var KeeperMiner = function(room) {
 	// 需求计算
 	var RequireTotal = 0;
-	if (room.storage) {
+	if (_.size(room.memory.extractor) > 0) {
 		RequireTotal = 1;
-	}	
+	}
 
 	// 提交队列
-	if (room.memory.CreepRequire.miner) {
+	if (!_.isUndefined(room.memory.CreepRequire.miner)) {
 		room.memory.CreepRequire.miner.RequireTotal = RequireTotal;
 		
 		var InSpawnQueue = room.memory.CreepRequire.miner.InSpawnQueue;

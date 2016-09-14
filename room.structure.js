@@ -5,8 +5,8 @@ var CONTROLLER_DEFENSE_REPAIRE = {
 	0: 0,
 	1: 0,
 	2: 0,
-	3: 200000, //200K
-	4: 200000,
+	3: 100000, //200K
+	4: 150000,
 	5: 200000,
 	6: 200000,
 	7: 200000,
@@ -204,11 +204,11 @@ var UpdateContainer = function(container) {
 	if (_.sum(container.store) >= container.storeCapacity * 0.9) {
 		container.room.memory.container[id].discharge = true;
 	}
-	if (discharge && container.store[RESOURCE_ENERGY] == 0) {
+	if (discharge && _.sum(container.store) == 0) {
 		container.room.memory.container[id].discharge = false;
 	}
 
-	container.room.memory.container[id].storeEnergy = container.store[RESOURCE_ENERGY];
+	container.room.memory.container[id].storeEnergy = _.sum(container.store);
 	container.room.memory.container[id].storeCapacity = container.storeCapacity;
 
 	// 清理内存

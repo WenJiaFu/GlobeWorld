@@ -23,25 +23,43 @@ var FindDischargeContainer = function(RoomName, CarryCapacity) {
 
 var Recycle = function(creep) {
 	creep.say("Recycle");
-	var store = creep.FindStorableForRecycle();
-	if (store) {
-		if (creep.transfer(store, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+
+	for (var type in creep.carry) {
+		if (creep.carry[type] == 0) {
+			continue;
+		}
+
+		var store = undefined;
+		if (type == RESOURCE_ENERGY && creep.carry[RESOURCE_ENERGY] > 0) {
+			store = creep.FindStorableForRecycle();
+		} else {
+			store = creep.room.storage;
+		}
+
+		if (creep.transfer(store, type) == ERR_NOT_IN_RANGE) {
 			creep.moveTo(store);
 		}
-	} else {
-		var tower = creep.FindClosestTower();
-		if (tower) {			
-			creep.TransferEnergyTo(tower);
+
+		if (!store && type == RESOURCE_ENERGY) {
+			var tower = creep.FindClosestTower();
+			if (tower) {
+				creep.TransferEnergyTo(tower);
+			}
 		}
+
+		break;
 	}
 }
 
 var Collect = function(creep) {
 	var CarryCapacity = creep.getActiveBodyparts(CARRY) * 50;
 	var Container = FindDischargeContainer(creep.room.name, CarryCapacity);
-	if (Container && Container.store[RESOURCE_ENERGY] > 0) {
-		if (creep.withdraw(Container, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-			creep.moveTo(Container);
+	if (Container && _.sum(Container.store) > 0) {
+		for (var type in Container.store) {
+			if (creep.withdraw(Container, type) == ERR_NOT_IN_RANGE) {
+				creep.moveTo(Container);
+				break;
+			}
 		}
 	} else {
 		// 拾取房间内掉落Energy
@@ -67,11 +85,11 @@ var roleCollect = {
 
 	/** @param {Creep} creep **/
 	run: function(creep) {
-		if (creep.memory.state == State.Collect && creep.carry.energy == creep.carryCapacity) {
+		if (creep.memory.state == State.Collect && _.sum(creep.carry) == creep.carryCapacity) {
 			creep.memory.state = State.Recycle;
 			creep.say("recycle");
 		}
-		if (creep.memory.state == State.Recycle && creep.carry.energy == 0) {
+		if (creep.memory.state == State.Recycle && _.sum(creep.carry) == 0) {
 			creep.memory.state = State.Collect;
 			creep.say("collect");
 		}

@@ -43,6 +43,12 @@ global.ImportRoom = function(roomName) {
 	return `ImportRoom ${roomName}`;
 }
 
+// 市场交易
+global.MakeOrder = function() {
+	var orders = Game.market.getAllOrders({type: ORDER_BUY, resourceType: RESOURCE_ENERGY});
+	return "orders: " + _.size(orders);
+}
+
 // 采矿(harvester)
 // Game.spawns['Spawn1'].createCreep( [WORK,CARRY,MOVE], undefined, { role: 'harvester', workRoom: 'E16S41', state: 'init', preAllocate: '577b93a60f9d51615fa48792'});
 
@@ -50,7 +56,7 @@ global.ImportRoom = function(roomName) {
 // Game.spawns['Spawn1'].createCreep( [WORK,CARRY,MOVE,WORK,CARRY,MOVE,WORK,CARRY,MOVE,WORK,CARRY,MOVE], undefined, { role: 'builder', workRoom: 'W32N26', state: 'building'});
 
 // 回收工人(collect)
-// Game.spawns['Spawn1'].createCreep( [CARRY,CARRY,MOVE], undefined, { role: 'collect', state: 'init'});
+// Game.spawns['Spawn1'].createCreep( [CARRY,CARRY,MOVE], undefined, { role: 'collect', state: 'recycle'});
 
 // Game.spawns['Spawn1'].createCreep( [CARRY,CARRY,MOVE,CARRY,CARRY,MOVE,CARRY,CARRY,MOVE], undefined, { role: 'collect', workRoom: 'E16S41', state: 'recycle'});
 
